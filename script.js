@@ -144,6 +144,34 @@ function loadDemoData() {
     setData('expenses', expenses);
     setData('staff', staff);
     setData('settings', { name: 'Le Paradisier', currency: 'Ar', phone: '+261 34 00 000 00', address: 'Toamasina, Madagascar' });
+
+    // Données de démonstration comptabilité
+    const accounting = [
+        // === REVENUS ===
+        { id: generateId('ACC'), date: today(), type: 'Revenu', category: 'Hébergement', source: 'Appartements', description: 'Paiement séjour Appartement 1A — Rindra Rakotomalala', amount: 1350000, payment: 'Mobile Money', status: 'Payé', note: '3 nuits × 450 000 Ar' },
+        { id: generateId('ACC'), date: today(), type: 'Revenu', category: 'Restaurant', source: 'Restaurant', description: 'Commandes restaurant du jour (CMD-001, 002, 004, 005)', amount: 420000, payment: 'Espèces', status: 'Payé', note: 'Encaissement journalier' },
+        { id: generateId('ACC'), date: today(), type: 'Revenu', category: 'Livraison', source: 'Livraison', description: 'Frais livraison encaissés', amount: 20000, payment: 'Espèces', status: 'Payé', note: 'Client Express' },
+        { id: generateId('ACC'), date: daysAgo(1), type: 'Revenu', category: 'Hébergement', source: 'Chambres', description: 'Acompte réservation Chambre Deluxe 01 — Volatiana', amount: 500000, payment: 'Mobile Money', status: 'Payé', note: 'Acompte 500 000 Ar / 750 000 Ar total' },
+        { id: generateId('ACC'), date: daysAgo(2), type: 'Revenu', category: 'Restaurant', source: 'Restaurant', description: 'Recettes restaurant mercredi', amount: 380000, payment: 'Espèces', status: 'Payé', note: '' },
+        { id: generateId('ACC'), date: daysAgo(3), type: 'Revenu', category: 'Hébergement', source: 'Appartements', description: 'Paiement réservation future — Zo Rabemananjara', amount: 350000, payment: 'Virement', status: 'En attente', note: 'En attente de confirmation' },
+        { id: generateId('ACC'), date: daysAgo(5), type: 'Revenu', category: 'Restaurant', source: 'Restaurant', description: 'Recettes restaurant samedi', amount: 520000, payment: 'Espèces', status: 'Payé', note: 'Week-end chargé' },
+        { id: generateId('ACC'), date: daysAgo(7), type: 'Revenu', category: 'Hébergement', source: 'Appartements', description: 'Location Appartement 2B court séjour', amount: 700000, payment: 'Mobile Money', status: 'Payé', note: '2 nuits' },
+        { id: generateId('ACC'), date: daysAgo(10), type: 'Revenu', category: 'Livraison', source: 'Livraison', description: 'Livraisons de la semaine', amount: 75000, payment: 'Espèces', status: 'Payé', note: '5 livraisons × 15 000 Ar' },
+        { id: generateId('ACC'), date: daysAgo(14), type: 'Revenu', category: 'Restaurant', source: 'Restaurant', description: 'Recettes restaurant semaine 2', amount: 1850000, payment: 'Espèces', status: 'Payé', note: 'Total semaine' },
+        // === DÉPENSES ===
+        { id: generateId('ACC'), date: today(), type: 'Dépense', category: 'Achats', source: 'Stock', description: 'Achat produits alimentaires — Marché Bazarikely', amount: 450000, payment: 'Espèces', status: 'Payé', note: 'Viande, légumes, épices' },
+        { id: generateId('ACC'), date: daysAgo(1), type: 'Dépense', category: 'Salaires', source: 'Salaire', description: 'Salaires personnel (acompte mi-mois)', amount: 1500000, payment: 'Mobile Money', status: 'Payé', note: '6 employés — acompte' },
+        { id: generateId('ACC'), date: daysAgo(2), type: 'Dépense', category: 'Charges', source: 'Maintenance', description: 'Facture électricité JIRAMA', amount: 850000, payment: 'Mobile Money', status: 'Payé', note: 'Mois courant' },
+        { id: generateId('ACC'), date: daysAgo(3), type: 'Dépense', category: 'Maintenance', source: 'Maintenance', description: 'Réparation climatisation Chambre Deluxe 02', amount: 350000, payment: 'Espèces', status: 'Payé', note: 'Techni-Froid Tana' },
+        { id: generateId('ACC'), date: daysAgo(4), type: 'Dépense', category: 'Achats', source: 'Stock', description: 'Achat boissons et consommables bar', amount: 620000, payment: 'Espèces', status: 'Payé', note: 'Distributeur boissons' },
+        { id: generateId('ACC'), date: daysAgo(5), type: 'Dépense', category: 'Charges', source: 'Autre', description: 'Facture Internet Telma', amount: 250000, payment: 'Mobile Money', status: 'Payé', note: 'Abonnement mensuel' },
+        { id: generateId('ACC'), date: daysAgo(6), type: 'Dépense', category: 'Achats', source: 'Stock', description: 'Produits nettoyage et entretien chambres', amount: 180000, payment: 'Espèces', status: 'Payé', note: 'Savons, produits, draps' },
+        { id: generateId('ACC'), date: daysAgo(8), type: 'Dépense', category: 'Charges', source: 'Autre', description: 'Facture eau JIRAMA', amount: 120000, payment: 'Mobile Money', status: 'Payé', note: '' },
+        { id: generateId('ACC'), date: daysAgo(12), type: 'Dépense', category: 'Salaires', source: 'Salaire', description: 'Salaire livreur Tsiry Rakoto', amount: 600000, payment: 'Mobile Money', status: 'Payé', note: '' },
+        { id: generateId('ACC'), date: daysAgo(15), type: 'Dépense', category: 'Marketing', source: 'Autre', description: 'Publicité réseaux sociaux + impression menus', amount: 150000, payment: 'Mobile Money', status: 'En attente', note: 'Devis prestataire en cours' },
+    ];
+    setData('accounting', accounting);
+
     setData('initialized', true);
 }
 
@@ -181,7 +209,8 @@ function navigateTo(module) {
         restaurant: 'Restaurant', deliveries: 'Livraisons', clients: 'Clients',
         stock: 'Stock', expenses: 'Dépenses', finances: 'Finances',
         staff: 'Personnel', revenue: 'Chiffre d\'affaires', invoices: 'Factures',
-        reports: 'Rapports', settings: 'Paramètres'
+        reports: 'Rapports', settings: 'Paramètres',
+        accounting: 'Comptabilité & Trésorerie'
     };
     document.getElementById('pageTitle').textContent = titles[module] || module;
     renderModule(module);
@@ -206,6 +235,7 @@ function renderModule(module) {
         case 'expenses': content.innerHTML = renderExpenses(); break;
         case 'finances': content.innerHTML = renderFinances(); initFinanceCharts(); break;
         case 'staff': content.innerHTML = renderStaff(); break;
+        case 'accounting': content.innerHTML = renderAccounting(); initAccountingCharts(); break;
         case 'revenue': content.innerHTML = renderRevenue(); break;
         case 'invoices': content.innerHTML = renderInvoices(); break;
         case 'reports': content.innerHTML = renderReports(); break;
@@ -1653,6 +1683,389 @@ function copyReport() {
     const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
     const text = `📊 RAPPORT - Le Paradisier\n📅 ${formatDate(today())}\n\n💰 Revenus Restaurant: ${formatMoney(revenueResto)}\n🏨 Revenus Hébergement: ${formatMoney(revenueRooms)}\n📉 Dépenses: ${formatMoney(totalExpenses)}\n✅ Bénéfice: ${formatMoney(revenueResto + revenueRooms - totalExpenses)}\n\n📋 ${orders.length} commandes | ${reservations.length} réservations`;
     navigator.clipboard.writeText(text).then(() => showToast('Résumé copié'));
+}
+
+// ===== ACCOUNTING MODULE (Comptabilité & Trésorerie) =====
+
+function getAccountingStats() {
+    const txs = getData('accounting') || [];
+    const todayStr = today();
+
+    const revenuesPaids  = txs.filter(t => t.type === 'Revenu'  && t.status === 'Payé');
+    const depensesPaids  = txs.filter(t => t.type === 'Dépense' && t.status === 'Payé');
+    const pending        = txs.filter(t => t.status === 'En attente');
+
+    const revenus   = revenuesPaids.reduce((s, t) => s + (t.amount || 0), 0);
+    const depenses  = depensesPaids.reduce((s, t) => s + (t.amount || 0), 0);
+    const benefice  = revenus - depenses;
+    const tresorerie = revenus - depenses;   // simplifié = cash disponible estimé
+    const enAttente = pending.reduce((s, t) => s + (t.amount || 0), 0);
+
+    const soldJourRev = txs.filter(t => t.type === 'Revenu'  && t.status === 'Payé' && t.date === todayStr).reduce((s, t) => s + (t.amount || 0), 0);
+    const soldJourDep = txs.filter(t => t.type === 'Dépense' && t.status === 'Payé' && t.date === todayStr).reduce((s, t) => s + (t.amount || 0), 0);
+    const soldeJour = soldJourRev - soldJourDep;
+
+    return { revenus, depenses, benefice, tresorerie, enAttente, soldeJour, txs };
+}
+
+function renderAccounting() {
+    const { revenus, depenses, benefice, tresorerie, enAttente, soldeJour, txs } = getAccountingStats();
+
+    const filterType   = '';
+    const filterCat    = '';
+    const filterStatus = '';
+
+    return `
+    <!-- KPI Grid -->
+    <div class="kpi-grid acc-kpi-grid">
+        <div class="kpi-card acc-kpi-green">
+            <div class="kpi-icon green"><i class="fas fa-arrow-trend-up"></i></div>
+            <div class="kpi-info">
+                <div class="label">Revenus encaissés</div>
+                <div class="value" style="color:var(--green)">${formatMoney(revenus)}</div>
+                <div class="trend up"><i class="fas fa-circle-check"></i> Transactions payées</div>
+            </div>
+        </div>
+        <div class="kpi-card acc-kpi-red">
+            <div class="kpi-icon red"><i class="fas fa-arrow-trend-down"></i></div>
+            <div class="kpi-info">
+                <div class="label">Dépenses payées</div>
+                <div class="value" style="color:var(--red)">${formatMoney(depenses)}</div>
+                <div class="trend down"><i class="fas fa-receipt"></i> Sorties de caisse</div>
+            </div>
+        </div>
+        <div class="kpi-card acc-kpi-gold">
+            <div class="kpi-icon gold"><i class="fas fa-scale-balanced"></i></div>
+            <div class="kpi-info">
+                <div class="label">Bénéfice net</div>
+                <div class="value" style="color:${benefice >= 0 ? 'var(--green)' : 'var(--red)'}">${formatMoney(benefice)}</div>
+                <div class="trend ${benefice >= 0 ? 'up' : 'down'}"><i class="fas fa-${benefice >= 0 ? 'arrow-up' : 'arrow-down'}"></i> ${benefice >= 0 ? 'Bénéficiaire' : 'Déficitaire'}</div>
+            </div>
+        </div>
+        <div class="kpi-card acc-kpi-blue">
+            <div class="kpi-icon blue"><i class="fas fa-vault"></i></div>
+            <div class="kpi-info">
+                <div class="label">Trésorerie estimée</div>
+                <div class="value" style="color:var(--primary)">${formatMoney(tresorerie)}</div>
+                <div class="trend up"><i class="fas fa-coins"></i> Cash disponible</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon orange"><i class="fas fa-hourglass-half"></i></div>
+            <div class="kpi-info">
+                <div class="label">Paiements en attente</div>
+                <div class="value">${formatMoney(enAttente)}</div>
+                <div class="trend down"><i class="fas fa-clock"></i> À encaisser / régler</div>
+            </div>
+        </div>
+        <div class="kpi-card ${soldeJour >= 0 ? 'acc-kpi-green' : 'acc-kpi-red'}">
+            <div class="kpi-icon ${soldeJour >= 0 ? 'green' : 'red'}"><i class="fas fa-calendar-day"></i></div>
+            <div class="kpi-info">
+                <div class="label">Solde du jour</div>
+                <div class="value" style="color:${soldeJour >= 0 ? 'var(--green)' : 'var(--red)'}">${formatMoney(soldeJour)}</div>
+                <div class="trend ${soldeJour >= 0 ? 'up' : 'down'}"><i class="fas fa-${soldeJour >= 0 ? 'plus' : 'minus'}"></i> Aujourd'hui</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="grid-3" style="margin-bottom:24px">
+        <div class="card">
+            <div class="card-header"><h3>📅 Revenus vs Dépenses / mois</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="chartAccMonthly"></canvas></div></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3>🧾 Dépenses par catégorie</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="chartAccExpCat"></canvas></div></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3>💰 Revenus par source</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="chartAccRevSrc"></canvas></div></div>
+        </div>
+    </div>
+
+    <!-- En-tête module -->
+    <div class="module-header">
+        <h3>📒 Journal des transactions</h3>
+        <div class="btn-group">
+            <button class="btn btn-outline btn-sm" onclick="exportAccountingCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+            <button class="btn btn-outline btn-sm" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+            <button class="btn btn-danger btn-sm" onclick="resetAccountingDemo()"><i class="fas fa-rotate-left"></i> Démo</button>
+            <button class="btn btn-primary" onclick="openAccountingForm()"><i class="fas fa-plus"></i> Nouvelle transaction</button>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters-bar">
+        <input type="text" class="search-input" placeholder="Rechercher description, catégorie..." onkeyup="filterTable('accTable', this.value)">
+        <select class="filter-select" onchange="filterTableByCol('accTable', 1, this.value)">
+            <option value="">Tous types</option>
+            <option value="Revenu">Revenu</option>
+            <option value="Dépense">Dépense</option>
+        </select>
+        <select class="filter-select" onchange="filterTableByCol('accTable', 3, this.value)">
+            <option value="">Toutes sources</option>
+            <option>Restaurant</option><option>Appartements</option><option>Chambres</option>
+            <option>Livraison</option><option>Stock</option><option>Salaire</option>
+            <option>Maintenance</option><option>Autre</option>
+        </select>
+        <select class="filter-select" onchange="filterTableByCol('accTable', 6, this.value)">
+            <option value="">Tous statuts</option>
+            <option value="Payé">Payé</option>
+            <option value="En attente">En attente</option>
+        </select>
+    </div>
+
+    <!-- Tableau transactions -->
+    <div class="card">
+        <div class="table-container">
+            <table id="accTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Catégorie</th>
+                        <th>Source</th>
+                        <th>Description</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
+                        <th>Paiement</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${txs.sort((a,b) => b.date.localeCompare(a.date)).map(t => `
+                    <tr>
+                        <td>${formatDate(t.date)}</td>
+                        <td><span class="status ${t.type === 'Revenu' ? 'green' : 'red'}">${t.type === 'Revenu' ? '▲' : '▼'} ${t.type}</span></td>
+                        <td><span class="status gray">${t.category}</span></td>
+                        <td>${t.source}</td>
+                        <td style="max-width:220px;font-size:12px">${t.description}${t.note ? `<br><small style="color:var(--text-gray)">${t.note}</small>` : ''}</td>
+                        <td><strong style="color:${t.type === 'Revenu' ? 'var(--green)' : 'var(--red)'}">${formatMoney(t.amount)}</strong></td>
+                        <td><span class="status ${t.status === 'Payé' ? 'green' : 'orange'}">${t.status}</span></td>
+                        <td><span class="acc-pay-badge">${t.payment}</span></td>
+                        <td class="actions-cell">
+                            <button class="action-btn edit" onclick="editAccounting('${t.id}')"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn delete" onclick="deleteAccounting('${t.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+            ${txs.length === 0 ? '<div class="empty-state"><i class="fas fa-landmark"></i><p>Aucune transaction. Cliquez sur "Nouvelle transaction" pour commencer.</p></div>' : ''}
+        </div>
+    </div>`;
+}
+
+function initAccountingCharts() {
+    const txs = getData('accounting') || [];
+
+    // 1. Revenus vs Dépenses par mois (6 derniers mois)
+    const ctx1 = document.getElementById('chartAccMonthly');
+    if (ctx1) {
+        const months = [];
+        const revData = [];
+        const depData = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            const ms = d.toISOString().substring(0, 7);
+            months.push(d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }));
+            revData.push(txs.filter(t => t.type === 'Revenu'  && t.status === 'Payé' && t.date && t.date.startsWith(ms)).reduce((s, t) => s + t.amount, 0));
+            depData.push(txs.filter(t => t.type === 'Dépense' && t.status === 'Payé' && t.date && t.date.startsWith(ms)).reduce((s, t) => s + t.amount, 0));
+        }
+        charts.accMonthly = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    { label: 'Revenus', data: revData, backgroundColor: 'rgba(18,161,80,0.75)', borderRadius: 4 },
+                    { label: 'Dépenses', data: depData, backgroundColor: 'rgba(229,72,77,0.75)', borderRadius: 4 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    // 2. Dépenses par catégorie
+    const ctx2 = document.getElementById('chartAccExpCat');
+    if (ctx2) {
+        const cats = {};
+        txs.filter(t => t.type === 'Dépense' && t.status === 'Payé').forEach(t => {
+            cats[t.category] = (cats[t.category] || 0) + t.amount;
+        });
+        const colors = ['#E5484D','#F59E0B','#0F3D3A','#12A150','#C99A2E','#667085','#3B82F6','#8B5CF6'];
+        charts.accExpCat = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(cats),
+                datasets: [{ data: Object.values(cats), backgroundColor: colors }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    // 3. Revenus par source
+    const ctx3 = document.getElementById('chartAccRevSrc');
+    if (ctx3) {
+        const srcs = {};
+        txs.filter(t => t.type === 'Revenu' && t.status === 'Payé').forEach(t => {
+            srcs[t.source] = (srcs[t.source] || 0) + t.amount;
+        });
+        const colors2 = ['#0F3D3A','#12A150','#C99A2E','#F59E0B','#3B82F6'];
+        charts.accRevSrc = new Chart(ctx3, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(srcs),
+                datasets: [{ data: Object.values(srcs), backgroundColor: colors2 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+}
+
+function openAccountingForm(tx = null) {
+    const t = tx || {};
+    openModal(tx ? 'Modifier transaction' : 'Nouvelle transaction', `
+        <form onsubmit="saveAccounting(event, '${t.id || ''}')">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Type</label>
+                    <select class="form-control" name="type" required>
+                        <option ${t.type === 'Revenu' ? 'selected' : ''} value="Revenu">Revenu</option>
+                        <option ${t.type === 'Dépense' ? 'selected' : ''} value="Dépense">Dépense</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" class="form-control" name="date" value="${t.date || today()}" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Catégorie</label>
+                    <select class="form-control" name="category" required>
+                        <option ${t.category === 'Hébergement' ? 'selected' : ''}>Hébergement</option>
+                        <option ${t.category === 'Restaurant' ? 'selected' : ''}>Restaurant</option>
+                        <option ${t.category === 'Livraison' ? 'selected' : ''}>Livraison</option>
+                        <option ${t.category === 'Achats' ? 'selected' : ''}>Achats</option>
+                        <option ${t.category === 'Salaires' ? 'selected' : ''}>Salaires</option>
+                        <option ${t.category === 'Charges' ? 'selected' : ''}>Charges</option>
+                        <option ${t.category === 'Maintenance' ? 'selected' : ''}>Maintenance</option>
+                        <option ${t.category === 'Marketing' ? 'selected' : ''}>Marketing</option>
+                        <option ${t.category === 'Autre' ? 'selected' : ''}>Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Source</label>
+                    <select class="form-control" name="source" required>
+                        <option ${t.source === 'Restaurant' ? 'selected' : ''}>Restaurant</option>
+                        <option ${t.source === 'Appartements' ? 'selected' : ''}>Appartements</option>
+                        <option ${t.source === 'Chambres' ? 'selected' : ''}>Chambres</option>
+                        <option ${t.source === 'Livraison' ? 'selected' : ''}>Livraison</option>
+                        <option ${t.source === 'Stock' ? 'selected' : ''}>Stock</option>
+                        <option ${t.source === 'Salaire' ? 'selected' : ''}>Salaire</option>
+                        <option ${t.source === 'Maintenance' ? 'selected' : ''}>Maintenance</option>
+                        <option ${t.source === 'Autre' ? 'selected' : ''}>Autre</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <input class="form-control" name="description" value="${t.description || ''}" required placeholder="Ex: Paiement séjour Appartement 1A">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Montant</label>
+                    <input type="number" class="form-control" name="amount" value="${t.amount || ''}" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Mode de paiement</label>
+                    <select class="form-control" name="payment">
+                        <option ${t.payment === 'Espèces' ? 'selected' : ''}>Espèces</option>
+                        <option ${t.payment === 'Mobile Money' ? 'selected' : ''}>Mobile Money</option>
+                        <option ${t.payment === 'Carte' ? 'selected' : ''}>Carte</option>
+                        <option ${t.payment === 'Virement' ? 'selected' : ''}>Virement</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Statut</label>
+                <select class="form-control" name="status">
+                    <option ${t.status === 'Payé' ? 'selected' : ''}>Payé</option>
+                    <option ${t.status === 'En attente' ? 'selected' : ''}>En attente</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Note</label>
+                <textarea class="form-control" name="note" placeholder="Informations complémentaires...">${t.note || ''}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px"><i class="fas fa-save"></i> Enregistrer</button>
+        </form>
+    `);
+}
+
+function saveAccounting(e, editId) {
+    e.preventDefault();
+    const form = e.target;
+    const txs = getData('accounting') || [];
+    const data = {
+        id: editId || generateId('ACC'),
+        date: form.date.value,
+        type: form.type.value,
+        category: form.category.value,
+        source: form.source.value,
+        description: form.description.value,
+        amount: parseInt(form.amount.value) || 0,
+        payment: form.payment.value,
+        status: form.status.value,
+        note: form.note.value
+    };
+    if (editId) {
+        const idx = txs.findIndex(t => t.id === editId);
+        if (idx >= 0) txs[idx] = data;
+    } else {
+        txs.push(data);
+    }
+    setData('accounting', txs);
+    closeModal();
+    showToast('Transaction enregistrée');
+    navigateTo('accounting');
+}
+
+function editAccounting(id) {
+    const txs = getData('accounting') || [];
+    const t = txs.find(x => x.id === id);
+    if (t) openAccountingForm(t);
+}
+
+function deleteAccounting(id) {
+    if (!confirm('Supprimer cette transaction ?')) return;
+    setData('accounting', (getData('accounting') || []).filter(t => t.id !== id));
+    showToast('Transaction supprimée', 'error');
+    navigateTo('accounting');
+}
+
+function exportAccountingCSV() {
+    const txs = getData('accounting') || [];
+    let csv = 'Date,Type,Catégorie,Source,Description,Montant,Statut,Paiement,Note\n';
+    txs.sort((a,b) => b.date.localeCompare(a.date)).forEach(t => {
+        csv += `${t.date},${t.type},${t.category},${t.source},"${t.description}",${t.amount},${t.status},${t.payment},"${t.note || ''}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `comptabilite_paradisier_${today()}.csv`;
+    link.click();
+    showToast('Export CSV téléchargé');
+}
+
+function resetAccountingDemo() {
+    if (!confirm('Réinitialiser les données de démonstration de la comptabilité ?')) return;
+    localStorage.removeItem('paradisier_accounting');
+    localStorage.removeItem('paradisier_initialized');
+    loadDemoData();
+    showToast('Données démo réinitialisées');
+    navigateTo('accounting');
 }
 
 // ===== SETTINGS MODULE =====
