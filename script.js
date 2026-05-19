@@ -177,7 +177,8 @@ function navigateTo(module) {
         dashboard: 'Tableau de bord', reservations: 'Réservations', rooms: 'Chambres & Appartements',
         restaurant: 'Restaurant', deliveries: 'Livraisons', clients: 'Clients',
         stock: 'Stock', expenses: 'Dépenses', finances: 'Finances',
-        staff: 'Personnel', reports: 'Rapports', settings: 'Paramètres'
+        staff: 'Personnel', revenue: 'Chiffre d\'affaires', invoices: 'Factures',
+        reports: 'Rapports', settings: 'Paramètres'
     };
     document.getElementById('pageTitle').textContent = titles[module] || module;
     renderModule(module);
@@ -202,6 +203,8 @@ function renderModule(module) {
         case 'expenses': content.innerHTML = renderExpenses(); break;
         case 'finances': content.innerHTML = renderFinances(); initFinanceCharts(); break;
         case 'staff': content.innerHTML = renderStaff(); break;
+        case 'revenue': content.innerHTML = renderRevenue(); break;
+        case 'invoices': content.innerHTML = renderInvoices(); break;
         case 'reports': content.innerHTML = renderReports(); break;
         case 'settings': content.innerHTML = renderSettings(); break;
     }
@@ -1228,6 +1231,264 @@ function saveStaff(e, editId) {
 
 function editStaff(id) { const s = (getData('staff') || []).find(x => x.id === id); if (s) openStaffForm(s); }
 function deleteStaff(id) { if (!confirm('Supprimer ?')) return; setData('staff', (getData('staff') || []).filter(s => s.id !== id)); showToast('Supprimé', 'error'); navigateTo('staff'); }
+
+// ===== REVENUE MODULE (Chiffre d'affaires) =====
+function renderRevenue() {
+    const orders = getData('orders') || [];
+    const reservations = getData('reservations') || [];
+    const deliveries = getData('deliveries') || [];
+
+    const todayStr = today();
+    const monthStr = todayStr.substring(0, 7);
+    const yearStr = todayStr.substring(0, 4);
+
+    // CA jour
+    const caJourResto = orders.filter(o => o.time && o.time.startsWith(todayStr) && o.paymentStatus === 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
+    const caJourRooms = reservations.filter(r => r.dateIn === todayStr && r.paymentStatus === 'Payé').reduce((s, r) => s + (r.total || 0), 0);
+    const caJourLiv = deliveries.filter(d => d.payment === 'Payé').reduce((s, d) => s + (d.deliveryFee || 0), 0);
+    const caJour = caJourResto + caJourRooms + caJourLiv;
+
+    // CA mois
+    const caMoisResto = orders.filter(o => o.time && o.time.startsWith(monthStr) && o.paymentStatus === 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
+    const caMoisRooms = reservations.filter(r => r.dateIn && r.dateIn.startsWith(monthStr) && r.paymentStatus === 'Payé').reduce((s, r) => s + (r.total || 0), 0);
+    const caMoisLiv = deliveries.filter(d => d.payment === 'Payé').reduce((s, d) => s + (d.deliveryFee || 0), 0);
+    const caMois = caMoisResto + caMoisRooms + caMoisLiv;
+
+    // CA année
+    const caAnneeResto = orders.filter(o => o.time && o.time.startsWith(yearStr) && o.paymentStatus === 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
+    const caAnneeRooms = reservations.filter(r => r.dateIn && r.dateIn.startsWith(yearStr) && r.paymentStatus === 'Payé').reduce((s, r) => s + (r.total || 0), 0);
+    const caAnneeLiv = deliveries.filter(d => d.payment === 'Payé').reduce((s, d) => s + (d.deliveryFee || 0), 0);
+    const caAnnee = caAnneeResto + caAnneeRooms + caAnneeLiv;
+
+    return `
+    <div class="module-header">
+        <h3>Chiffre d'affaires</h3>
+        <select class="filter-select" id="revenuePeriod" onchange="switchRevenuePeriod(this.value)">
+            <option value="jour" selected>Aujourd'hui</option>
+            <option value="mois">Ce mois</option>
+            <option value="annee">Cette année</option>
+        </select>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-icon gold"><i class="fas fa-wallet"></i></div><div class="kpi-info"><div class="label">CA Total du jour</div><div class="value">${formatMoney(caJour)}</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon green"><i class="fas fa-utensils"></i></div><div class="kpi-info"><div class="label">Restaurant (jour)</div><div class="value">${formatMoney(caJourResto)}</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon blue"><i class="fas fa-bed"></i></div><div class="kpi-info"><div class="label">Hébergement (jour)</div><div class="value">${formatMoney(caJourRooms)}</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon orange"><i class="fas fa-motorcycle"></i></div><div class="kpi-info"><div class="label">Livraisons (jour)</div><div class="value">${formatMoney(caJourLiv)}</div></div></div>
+    </div>
+
+    <div id="revenueDetails">
+        <div class="grid-3" style="margin-top:20px">
+            <div class="card">
+                <div class="card-header"><h3>📅 CA du Jour</h3></div>
+                <div class="card-body">
+                    <div class="report-summary">
+                        <div class="report-item"><div class="value" style="color:var(--gold)">${formatMoney(caJour)}</div><div class="label">Total</div></div>
+                        <div class="report-item"><div class="value">${formatMoney(caJourResto)}</div><div class="label">Restaurant</div></div>
+                        <div class="report-item"><div class="value">${formatMoney(caJourRooms)}</div><div class="label">Chambres</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>📆 CA du Mois</h3></div>
+                <div class="card-body">
+                    <div class="report-summary">
+                        <div class="report-item"><div class="value" style="color:var(--gold)">${formatMoney(caMois)}</div><div class="label">Total</div></div>
+                        <div class="report-item"><div class="value">${formatMoney(caMoisResto)}</div><div class="label">Restaurant</div></div>
+                        <div class="report-item"><div class="value">${formatMoney(caMoisRooms)}</div><div class="label">Chambres</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>📊 CA de l'Année</h3></div>
+                <div class="card-body">
+                    <div class="report-summary">
+                        <div class="report-item"><div class="value" style="color:var(--gold)">${formatMoney(caAnnee)}</div><div class="label">Total</div></div>
+                        <div class="report-item"><div class="value">${formatMoney(caAnneeResto)}</div><div class="label">Restaurant</div></div>
+                        <div class="report-item"><div class="value">${formatMoney(caAnneeRooms)}</div><div class="label">Chambres</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+        <div class="card-header"><h3>📋 Détail des encaissements du jour</h3></div>
+        <div class="card-body"><div class="table-container">
+            <table><thead><tr><th>Type</th><th>Client</th><th>Description</th><th>Montant</th><th>Paiement</th></tr></thead>
+            <tbody>
+                ${orders.filter(o => o.time && o.time.startsWith(todayStr) && o.paymentStatus === 'Payé').map(o => `<tr><td><span class="status green">Restaurant</span></td><td>${o.client}</td><td>${o.items.substring(0, 30)}</td><td><strong>${formatMoney(o.amount)}</strong></td><td>${o.payment}</td></tr>`).join('')}
+                ${reservations.filter(r => r.dateIn === todayStr && r.paymentStatus === 'Payé').map(r => `<tr><td><span class="status blue">Hébergement</span></td><td>${r.client}</td><td>${r.unit} (${r.nights} nuits)</td><td><strong>${formatMoney(r.total)}</strong></td><td>Payé</td></tr>`).join('')}
+                ${orders.filter(o => o.time && o.time.startsWith(todayStr) && o.paymentStatus === 'Payé').length === 0 && reservations.filter(r => r.dateIn === todayStr && r.paymentStatus === 'Payé').length === 0 ? '<tr><td colspan="5" style="text-align:center;color:var(--text-gray)">Aucun encaissement aujourd\'hui</td></tr>' : ''}
+            </tbody></table>
+        </div></div>
+    </div>`;
+}
+
+function switchRevenuePeriod(period) {
+    // Simple re-render for now - the KPI cards show all 3 periods already
+    showToast('Vue : ' + (period === 'jour' ? 'Aujourd\'hui' : period === 'mois' ? 'Ce mois' : 'Cette année'));
+}
+
+// ===== INVOICES MODULE (Factures) =====
+function renderInvoices() {
+    const orders = getData('orders') || [];
+    const reservations = getData('reservations') || [];
+    const invoices = [];
+    let num = 1;
+
+    // Générer factures à partir des commandes payées
+    orders.filter(o => o.paymentStatus === 'Payé').forEach(o => {
+        invoices.push({
+            id: 'FAC-' + String(num++).padStart(4, '0'),
+            date: o.time ? o.time.split('T')[0] : today(),
+            client: o.client,
+            type: 'Restaurant',
+            description: o.items,
+            amount: o.amount,
+            payment: o.payment,
+            status: 'Payée'
+        });
+    });
+
+    // Générer factures à partir des réservations payées
+    reservations.filter(r => r.paymentStatus === 'Payé').forEach(r => {
+        invoices.push({
+            id: 'FAC-' + String(num++).padStart(4, '0'),
+            date: r.dateIn,
+            client: r.client,
+            type: 'Hébergement',
+            description: `${r.unit} - ${r.nights} nuit(s)`,
+            amount: r.total,
+            payment: 'Payé',
+            status: 'Payée'
+        });
+    });
+
+    // Factures en attente (non payées)
+    orders.filter(o => o.paymentStatus !== 'Payé').forEach(o => {
+        invoices.push({
+            id: 'FAC-' + String(num++).padStart(4, '0'),
+            date: o.time ? o.time.split('T')[0] : today(),
+            client: o.client,
+            type: 'Restaurant',
+            description: o.items,
+            amount: o.amount,
+            payment: o.payment || 'Non payé',
+            status: 'En attente'
+        });
+    });
+
+    reservations.filter(r => r.paymentStatus !== 'Payé').forEach(r => {
+        invoices.push({
+            id: 'FAC-' + String(num++).padStart(4, '0'),
+            date: r.dateIn,
+            client: r.client,
+            type: 'Hébergement',
+            description: `${r.unit} - ${r.nights} nuit(s)`,
+            amount: r.remaining || r.total,
+            payment: r.paymentStatus,
+            status: 'En attente'
+        });
+    });
+
+    const totalPaid = invoices.filter(i => i.status === 'Payée').reduce((s, i) => s + (i.amount || 0), 0);
+    const totalPending = invoices.filter(i => i.status === 'En attente').reduce((s, i) => s + (i.amount || 0), 0);
+
+    return `
+    <div class="kpi-grid" style="margin-bottom:20px">
+        <div class="kpi-card"><div class="kpi-icon blue"><i class="fas fa-file-invoice"></i></div><div class="kpi-info"><div class="label">Total factures</div><div class="value">${invoices.length}</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon green"><i class="fas fa-check-circle"></i></div><div class="kpi-info"><div class="label">Factures payées</div><div class="value">${formatMoney(totalPaid)}</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon orange"><i class="fas fa-clock"></i></div><div class="kpi-info"><div class="label">En attente</div><div class="value">${formatMoney(totalPending)}</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon gold"><i class="fas fa-receipt"></i></div><div class="kpi-info"><div class="label">Payées ce mois</div><div class="value">${invoices.filter(i => i.status === 'Payée').length}</div></div></div>
+    </div>
+
+    <div class="module-header">
+        <h3>Liste des factures</h3>
+        <div class="btn-group">
+            <button class="btn btn-outline btn-sm" onclick="exportInvoicesCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>
+            <button class="btn btn-primary btn-sm" onclick="printInvoice()"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+    </div>
+
+    <div class="filters-bar">
+        <input type="text" class="search-input" placeholder="Rechercher client, n° facture..." onkeyup="filterTable('invoicesTable', this.value)">
+        <select class="filter-select" onchange="filterTableByCol('invoicesTable', 5, this.value)">
+            <option value="">Tous statuts</option>
+            <option value="Payée">Payée</option>
+            <option value="En attente">En attente</option>
+        </select>
+        <select class="filter-select" onchange="filterTableByCol('invoicesTable', 2, this.value)">
+            <option value="">Tous types</option>
+            <option value="Restaurant">Restaurant</option>
+            <option value="Hébergement">Hébergement</option>
+        </select>
+    </div>
+
+    <div class="card"><div class="table-container">
+        <table id="invoicesTable"><thead><tr><th>N° Facture</th><th>Date</th><th>Type</th><th>Client</th><th>Montant</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>${invoices.map(i => `<tr>
+            <td><strong>${i.id}</strong></td>
+            <td>${formatDate(i.date)}</td>
+            <td><span class="status ${i.type === 'Restaurant' ? 'green' : 'blue'}">${i.type}</span></td>
+            <td>${i.client}</td>
+            <td><strong>${formatMoney(i.amount)}</strong></td>
+            <td><span class="status ${i.status === 'Payée' ? 'green' : 'orange'}">${i.status}</span></td>
+            <td class="actions-cell">
+                <button class="action-btn edit" onclick="viewInvoice('${i.id}', '${i.client}', '${i.description}', ${i.amount}, '${i.date}', '${i.type}', '${i.status}')" title="Voir"><i class="fas fa-eye"></i></button>
+            </td>
+        </tr>`).join('')}</tbody></table>
+        ${invoices.length === 0 ? '<div class="empty-state"><i class="fas fa-file-invoice"></i><p>Aucune facture</p></div>' : ''}
+    </div></div>`;
+}
+
+function viewInvoice(id, client, desc, amount, date, type, status) {
+    const settings = getData('settings') || {};
+    openModal('Facture ' + id, `
+        <div style="text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--primary)">
+            <h2 style="color:var(--primary);margin-bottom:4px">🌴 ${settings.name || 'Le Paradisier'}</h2>
+            <p style="font-size:12px;color:var(--text-gray)">${settings.address || 'Bamako, Mali'} | ${settings.phone || ''}</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+            <div><strong>Facture :</strong> ${id}<br><strong>Date :</strong> ${formatDate(date)}</div>
+            <div style="text-align:right"><strong>Client :</strong> ${client}<br><strong>Type :</strong> ${type}</div>
+        </div>
+        <table style="width:100%;margin:16px 0;border-collapse:collapse">
+            <thead><tr style="background:var(--ivory)"><th style="padding:10px;text-align:left">Description</th><th style="padding:10px;text-align:right">Montant</th></tr></thead>
+            <tbody><tr><td style="padding:10px;border-bottom:1px solid #eee">${desc}</td><td style="padding:10px;text-align:right;border-bottom:1px solid #eee"><strong>${formatMoney(amount)}</strong></td></tr></tbody>
+        </table>
+        <div style="text-align:right;margin-top:16px;padding-top:12px;border-top:2px solid var(--primary)">
+            <div style="font-size:18px;font-weight:700;color:var(--primary)">Total : ${formatMoney(amount)}</div>
+            <div style="margin-top:8px"><span class="status ${status === 'Payée' ? 'green' : 'orange'}">${status}</span></div>
+        </div>
+        <div style="margin-top:20px;text-align:center">
+            <button class="btn btn-outline btn-sm" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
+        </div>
+    `);
+}
+
+function exportInvoicesCSV() {
+    const orders = getData('orders') || [];
+    const reservations = getData('reservations') || [];
+    let csv = 'N°,Date,Client,Type,Description,Montant,Statut\n';
+    let num = 1;
+    orders.filter(o => o.paymentStatus === 'Payé').forEach(o => {
+        csv += `FAC-${String(num++).padStart(4,'0')},${o.time ? o.time.split('T')[0] : ''},${o.client},Restaurant,"${o.items}",${o.amount},Payée\n`;
+    });
+    reservations.filter(r => r.paymentStatus === 'Payé').forEach(r => {
+        csv += `FAC-${String(num++).padStart(4,'0')},${r.dateIn},${r.client},Hébergement,"${r.unit} ${r.nights} nuits",${r.total},Payée\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `factures_paradisier_${today()}.csv`;
+    link.click();
+    showToast('Factures exportées en CSV');
+}
+
+function printInvoice() {
+    window.print();
+}
 
 // ===== REPORTS MODULE =====
 function renderReports() {
