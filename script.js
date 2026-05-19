@@ -18,7 +18,12 @@ function generateId(prefix) {
 function formatMoney(amount) {
     const settings = getData('settings') || {};
     const currency = settings.currency || APP.currency;
-    return new Intl.NumberFormat('fr-FR').format(amount || 0) + ' ' + currency;
+    // Format malgache : séparateur de milliers = espace, pas de décimales
+    const formatted = new Intl.NumberFormat('fr-MG', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount || 0);
+    return 'Ar ' + formatted;
 }
 
 function formatDate(date) {
@@ -1663,7 +1668,7 @@ function renderSettings() {
                 <form onsubmit="saveSettings(event)">
                     <div class="form-row">
                         <div class="form-group"><label>Nom établissement</label><input class="form-control" name="name" value="${settings.name || 'Le Paradisier'}"></div>
-                        <div class="form-group"><label>Devise</label><select class="form-control" name="currency"><option ${settings.currency === 'Ar' ? 'selected' : ''}>Ar</option><option ${settings.currency === 'MGA' ? 'selected' : ''}>MGA</option><option ${settings.currency === 'EUR' ? 'selected' : ''}>EUR</option><option ${settings.currency === 'USD' ? 'selected' : ''}>USD</option></select></div>
+                        <div class="form-group"><label>Devise</label><select class="form-control" name="currency"><option ${settings.currency === 'Ar' ? 'selected' : ''} value="Ar">Ariary (Ar)</option><option ${settings.currency === 'MGA' ? 'selected' : ''} value="MGA">MGA</option><option ${settings.currency === 'EUR' ? 'selected' : ''} value="EUR">Euro (€)</option><option ${settings.currency === 'USD' ? 'selected' : ''} value="USD">Dollar ($)</option></select></div>
                     </div>
                     <div class="form-row">
                         <div class="form-group"><label>Téléphone WhatsApp</label><input class="form-control" name="phone" value="${settings.phone || ''}"></div>
