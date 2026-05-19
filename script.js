@@ -5,9 +5,9 @@
 // ===== APP STATE & CONFIG =====
 const APP = {
     name: 'Le Paradisier Manager',
-    currency: 'FCFA',
-    phone: '+223 70 00 00 00',
-    address: 'Bamako, Mali'
+    currency: 'Ar',
+    phone: '+261 34 00 000 00',
+    address: 'Toamasina, Madagascar'
 };
 
 // ===== UTILITY FUNCTIONS =====
@@ -67,69 +67,69 @@ function loadDemoData() {
     if (getData('initialized')) return;
 
     const clients = [
-        { id: generateId('CLT'), name: 'Aissatou Diallo', phone: '+223 76 12 34 56', email: 'aissatou@email.com', type: 'Les deux', reservations: 3, orders: 8, totalSpent: 485000, lastVisit: daysAgo(1), status: 'VIP', notes: 'Cliente fidèle' },
-        { id: generateId('CLT'), name: 'Mohamed Traoré', phone: '+223 65 98 76 54', email: 'mohamed.t@email.com', type: 'Restaurant', reservations: 0, orders: 12, totalSpent: 156000, lastVisit: daysAgo(2), status: 'Fidèle', notes: '' },
-        { id: generateId('CLT'), name: 'Fatoumata Keïta', phone: '+223 79 45 67 89', email: '', type: 'Appartement', reservations: 2, orders: 1, totalSpent: 320000, lastVisit: daysAgo(5), status: 'Fidèle', notes: 'Préfère étage 2' },
-        { id: generateId('CLT'), name: 'Ibrahim Camara', phone: '+223 66 33 22 11', email: 'ibrahim.c@email.com', type: 'Restaurant', reservations: 0, orders: 5, totalSpent: 67500, lastVisit: daysAgo(10), status: 'Nouveau', notes: '' },
-        { id: generateId('CLT'), name: 'Mariama Sissoko', phone: '+223 78 55 44 33', email: 'mariama.s@email.com', type: 'Les deux', reservations: 4, orders: 6, totalSpent: 720000, lastVisit: today(), status: 'VIP', notes: 'Entreprise - facture mensuelle' }
+        { id: generateId('CLT'), name: 'Rindra Rakotomalala', phone: '+261 34 12 345 67', email: 'rindra@email.com', type: 'Les deux', reservations: 3, orders: 8, totalSpent: 4850000, lastVisit: daysAgo(1), status: 'VIP', notes: 'Cliente fidèle' },
+        { id: generateId('CLT'), name: 'Haja Andrianaivo', phone: '+261 32 98 765 43', email: 'haja.a@email.com', type: 'Restaurant', reservations: 0, orders: 12, totalSpent: 1560000, lastVisit: daysAgo(2), status: 'Fidèle', notes: '' },
+        { id: generateId('CLT'), name: 'Volatiana Rasoamanana', phone: '+261 33 45 678 90', email: '', type: 'Appartement', reservations: 2, orders: 1, totalSpent: 3200000, lastVisit: daysAgo(5), status: 'Fidèle', notes: 'Préfère étage 2' },
+        { id: generateId('CLT'), name: 'Niry Randriamahefa', phone: '+261 34 33 221 10', email: 'niry.r@email.com', type: 'Restaurant', reservations: 0, orders: 5, totalSpent: 675000, lastVisit: daysAgo(10), status: 'Nouveau', notes: '' },
+        { id: generateId('CLT'), name: 'Zo Rabemananjara', phone: '+261 32 55 443 32', email: 'zo.r@email.com', type: 'Les deux', reservations: 4, orders: 6, totalSpent: 7200000, lastVisit: today(), status: 'VIP', notes: 'Entreprise - facture mensuelle' }
     ];
 
     const rooms = [
-        { id: generateId('RM'), name: 'Appartement 1A', type: 'Appartement', capacity: 4, price: 45000, status: 'Occupé', floor: 'Étage 1', description: 'Grand appartement avec vue', equipment: ['WiFi', 'Climatisation', 'Cuisine', 'TV', 'Parking'] },
-        { id: generateId('RM'), name: 'Appartement 2B', type: 'Appartement', capacity: 2, price: 35000, status: 'Disponible', floor: 'Étage 2', description: 'Appartement cosy', equipment: ['WiFi', 'Climatisation', 'Cuisine', 'TV'] },
-        { id: generateId('RM'), name: 'Appartement 3C', type: 'Appartement', capacity: 3, price: 40000, status: 'Nettoyage', floor: 'Étage 3', description: 'Appartement familial', equipment: ['WiFi', 'Climatisation', 'Cuisine', 'TV', 'Parking'] },
-        { id: generateId('RM'), name: 'Chambre Deluxe 01', type: 'Chambre', capacity: 2, price: 25000, status: 'Occupé', floor: 'Étage 1', description: 'Chambre deluxe avec balcon', equipment: ['WiFi', 'Climatisation', 'TV'] },
-        { id: generateId('RM'), name: 'Chambre Standard 05', type: 'Chambre', capacity: 2, price: 15000, status: 'Disponible', floor: 'Étage 2', description: 'Chambre confortable', equipment: ['WiFi', 'Climatisation'] },
-        { id: generateId('RM'), name: 'Chambre Deluxe 02', type: 'Chambre', capacity: 2, price: 25000, status: 'Maintenance', floor: 'Étage 1', description: 'En réparation climatisation', equipment: ['WiFi', 'Climatisation', 'TV'] }
+        { id: generateId('RM'), name: 'Appartement 1A', type: 'Appartement', capacity: 4, price: 450000, status: 'Occupé', floor: 'Étage 1', description: 'Grand appartement avec vue mer', equipment: ['WiFi', 'Climatisation', 'Cuisine', 'TV', 'Parking'] },
+        { id: generateId('RM'), name: 'Appartement 2B', type: 'Appartement', capacity: 2, price: 350000, status: 'Disponible', floor: 'Étage 2', description: 'Appartement cosy', equipment: ['WiFi', 'Climatisation', 'Cuisine', 'TV'] },
+        { id: generateId('RM'), name: 'Appartement 3C', type: 'Appartement', capacity: 3, price: 400000, status: 'Nettoyage', floor: 'Étage 3', description: 'Appartement familial', equipment: ['WiFi', 'Climatisation', 'Cuisine', 'TV', 'Parking'] },
+        { id: generateId('RM'), name: 'Chambre Deluxe 01', type: 'Chambre', capacity: 2, price: 250000, status: 'Occupé', floor: 'Étage 1', description: 'Chambre deluxe avec balcon', equipment: ['WiFi', 'Climatisation', 'TV'] },
+        { id: generateId('RM'), name: 'Chambre Standard 05', type: 'Chambre', capacity: 2, price: 150000, status: 'Disponible', floor: 'Étage 2', description: 'Chambre confortable', equipment: ['WiFi', 'Climatisation'] },
+        { id: generateId('RM'), name: 'Chambre Deluxe 02', type: 'Chambre', capacity: 2, price: 250000, status: 'Maintenance', floor: 'Étage 1', description: 'En réparation climatisation', equipment: ['WiFi', 'Climatisation', 'TV'] }
     ];
 
     const reservations = [
-        { id: 'RSV-001', client: 'Aissatou Diallo', phone: '+223 76 12 34 56', type: 'Appartement', unit: 'Appartement 1A', dateIn: today(), dateOut: daysAgo(-3), nights: 3, pricePerNight: 45000, total: 135000, deposit: 135000, remaining: 0, paymentStatus: 'Payé', status: 'Confirmée', note: '' },
-        { id: 'RSV-002', client: 'Fatoumata Keïta', phone: '+223 79 45 67 89', type: 'Chambre', unit: 'Chambre Deluxe 01', dateIn: daysAgo(1), dateOut: daysAgo(-2), nights: 3, pricePerNight: 25000, total: 75000, deposit: 50000, remaining: 25000, paymentStatus: 'Acompte', status: 'Confirmée', note: 'Arrivée tardive' },
-        { id: 'RSV-003', client: 'Mariama Sissoko', phone: '+223 78 55 44 33', type: 'Appartement', unit: 'Appartement 2B', dateIn: daysAgo(-5), dateOut: daysAgo(-8), nights: 3, pricePerNight: 35000, total: 105000, deposit: 0, remaining: 105000, paymentStatus: 'En attente', status: 'En attente', note: 'Confirmation en cours' }
+        { id: 'RSV-001', client: 'Rindra Rakotomalala', phone: '+261 34 12 345 67', type: 'Appartement', unit: 'Appartement 1A', dateIn: today(), dateOut: daysAgo(-3), nights: 3, pricePerNight: 450000, total: 1350000, deposit: 1350000, remaining: 0, paymentStatus: 'Payé', status: 'Confirmée', note: '' },
+        { id: 'RSV-002', client: 'Volatiana Rasoamanana', phone: '+261 33 45 678 90', type: 'Chambre', unit: 'Chambre Deluxe 01', dateIn: daysAgo(1), dateOut: daysAgo(-2), nights: 3, pricePerNight: 250000, total: 750000, deposit: 500000, remaining: 250000, paymentStatus: 'Acompte', status: 'Confirmée', note: 'Arrivée tardive' },
+        { id: 'RSV-003', client: 'Zo Rabemananjara', phone: '+261 32 55 443 32', type: 'Appartement', unit: 'Appartement 2B', dateIn: daysAgo(-5), dateOut: daysAgo(-8), nights: 3, pricePerNight: 350000, total: 1050000, deposit: 0, remaining: 1050000, paymentStatus: 'En attente', status: 'En attente', note: 'Confirmation en cours' }
     ];
 
     const orders = [
-        { id: 'CMD-001', time: today() + 'T12:30', client: 'Mohamed Traoré', phone: '+223 65 98 76 54', type: 'Sur place', items: 'Poulet braisé, Riz, Jus', amount: 8500, payment: 'Espèces', paymentStatus: 'Payé', status: 'Livrée', note: '' },
-        { id: 'CMD-002', time: today() + 'T13:00', client: 'Ibrahim Camara', phone: '+223 66 33 22 11', type: 'À emporter', items: 'Tilapia grillé, Attiéké, Boisson', amount: 12000, payment: 'Mobile Money', paymentStatus: 'Payé', status: 'Prête', note: '' },
-        { id: 'CMD-003', time: today() + 'T13:45', client: 'Aissatou Diallo', phone: '+223 76 12 34 56', type: 'Livraison', items: 'Crevettes sautées, Riz cantonais x2', amount: 22000, payment: 'Non payé', paymentStatus: 'En attente', status: 'En préparation', note: 'Livreur à affecter' },
-        { id: 'CMD-004', time: today() + 'T11:00', client: 'Mariama Sissoko', phone: '+223 78 55 44 33', type: 'Sur place', items: 'Salade César, Eau minérale', amount: 6500, payment: 'Carte', paymentStatus: 'Payé', status: 'Livrée', note: '' },
-        { id: 'CMD-005', time: today() + 'T14:15', client: 'Client passage', phone: '', type: 'Sur place', items: 'Brochettes x4, Frites, Bissap', amount: 15000, payment: 'Espèces', paymentStatus: 'Payé', status: 'À préparer', note: '' }
+        { id: 'CMD-001', time: today() + 'T12:30', client: 'Haja Andrianaivo', phone: '+261 32 98 765 43', type: 'Sur place', items: 'Romazava, Vary (riz), Jus de goyave', amount: 85000, payment: 'Espèces', paymentStatus: 'Payé', status: 'Livrée', note: '' },
+        { id: 'CMD-002', time: today() + 'T13:00', client: 'Niry Randriamahefa', phone: '+261 34 33 221 10', type: 'À emporter', items: 'Poisson grillé, Mofo gasy, Boisson', amount: 120000, payment: 'MVola', paymentStatus: 'Payé', status: 'Prête', note: '' },
+        { id: 'CMD-003', time: today() + 'T13:45', client: 'Rindra Rakotomalala', phone: '+261 34 12 345 67', type: 'Livraison', items: 'Crevettes sautées, Vary x2, Litchis', amount: 220000, payment: 'Non payé', paymentStatus: 'En attente', status: 'En préparation', note: 'Livreur à affecter' },
+        { id: 'CMD-004', time: today() + 'T11:00', client: 'Zo Rabemananjara', phone: '+261 32 55 443 32', type: 'Sur place', items: 'Salade de palmier, Eau minérale', amount: 65000, payment: 'Carte', paymentStatus: 'Payé', status: 'Livrée', note: '' },
+        { id: 'CMD-005', time: today() + 'T14:15', client: 'Client passage', phone: '', type: 'Sur place', items: 'Brochettes zébu x4, Frites, Jus de tamarin', amount: 150000, payment: 'Espèces', paymentStatus: 'Payé', status: 'À préparer', note: '' }
     ];
 
     const deliveries = [
-        { id: generateId('LIV'), client: 'Aissatou Diallo', phone: '+223 76 12 34 56', address: 'Hamdallaye ACI 2000', order: 'CMD-003', driver: 'Oumar Diarra', deliveryFee: 1500, total: 23500, departure: '14:00', eta: '14:30', status: 'En route', payment: 'À encaisser', note: '' },
-        { id: generateId('LIV'), client: 'Client Express', phone: '+223 70 11 22 33', address: 'Badalabougou', order: 'CMD-006', driver: 'Sékou Bah', deliveryFee: 2000, total: 18000, departure: '12:30', eta: '13:00', status: 'Livrée', payment: 'Payé', note: '' }
+        { id: generateId('LIV'), client: 'Rindra Rakotomalala', phone: '+261 34 12 345 67', address: 'Anjoma, Toamasina', order: 'CMD-003', driver: 'Tsiry Rakoto', deliveryFee: 15000, total: 235000, departure: '14:00', eta: '14:30', status: 'En route', payment: 'À encaisser', note: '' },
+        { id: generateId('LIV'), client: 'Client Express', phone: '+261 32 11 223 34', address: 'Bazarikely, Toamasina', order: 'CMD-006', driver: 'Faniry Andria', deliveryFee: 20000, total: 180000, departure: '12:30', eta: '13:00', status: 'Livrée', payment: 'Payé', note: '' }
     ];
 
     const stock = [
-        { id: generateId('STK'), product: 'Poulet frais', category: 'Cuisine', quantity: 8, unit: 'kg', threshold: 5, buyPrice: 3500, value: 28000, supplier: 'Marché Central', lastEntry: daysAgo(1), status: 'OK' },
-        { id: generateId('STK'), product: 'Tomates', category: 'Cuisine', quantity: 3, unit: 'kg', threshold: 5, buyPrice: 1500, value: 4500, supplier: 'Marché Central', lastEntry: daysAgo(2), status: 'Faible' },
-        { id: generateId('STK'), product: 'Riz 5kg', category: 'Cuisine', quantity: 12, unit: 'paquet', threshold: 4, buyPrice: 4500, value: 54000, supplier: 'Grossiste Ali', lastEntry: daysAgo(3), status: 'OK' },
-        { id: generateId('STK'), product: 'Huile végétale', category: 'Cuisine', quantity: 6, unit: 'L', threshold: 3, buyPrice: 2000, value: 12000, supplier: 'Grossiste Ali', lastEntry: daysAgo(5), status: 'OK' },
-        { id: generateId('STK'), product: 'Jus d\'orange', category: 'Boissons', quantity: 2, unit: 'paquet', threshold: 5, buyPrice: 8000, value: 16000, supplier: 'Distributeur Boissons', lastEntry: daysAgo(7), status: 'Critique' },
-        { id: generateId('STK'), product: 'Crevettes', category: 'Cuisine', quantity: 4, unit: 'kg', threshold: 3, buyPrice: 12000, value: 48000, supplier: 'Poissonnier Port', lastEntry: daysAgo(1), status: 'OK' },
-        { id: generateId('STK'), product: 'Produits nettoyage', category: 'Nettoyage', quantity: 10, unit: 'pièce', threshold: 4, buyPrice: 2500, value: 25000, supplier: 'Quincaillerie', lastEntry: daysAgo(10), status: 'OK' },
-        { id: generateId('STK'), product: 'Draps', category: 'Chambre', quantity: 1, unit: 'pièce', threshold: 6, buyPrice: 15000, value: 15000, supplier: 'Fournisseur Textile', lastEntry: daysAgo(15), status: 'Critique' },
-        { id: generateId('STK'), product: 'Savon invité', category: 'Chambre', quantity: 20, unit: 'pièce', threshold: 10, buyPrice: 500, value: 10000, supplier: 'Grossiste Hygiène', lastEntry: daysAgo(4), status: 'OK' }
+        { id: generateId('STK'), product: 'Poulet fermier', category: 'Cuisine', quantity: 8, unit: 'kg', threshold: 5, buyPrice: 35000, value: 280000, supplier: 'Marché Bazarikely', lastEntry: daysAgo(1), status: 'OK' },
+        { id: generateId('STK'), product: 'Tomates', category: 'Cuisine', quantity: 3, unit: 'kg', threshold: 5, buyPrice: 12000, value: 36000, supplier: 'Marché Bazarikely', lastEntry: daysAgo(2), status: 'Faible' },
+        { id: generateId('STK'), product: 'Vary (riz) 5kg', category: 'Cuisine', quantity: 12, unit: 'paquet', threshold: 4, buyPrice: 40000, value: 480000, supplier: 'Grossiste Riz Tamatave', lastEntry: daysAgo(3), status: 'OK' },
+        { id: generateId('STK'), product: 'Huile végétale', category: 'Cuisine', quantity: 6, unit: 'L', threshold: 3, buyPrice: 18000, value: 108000, supplier: 'Grossiste Tamatave', lastEntry: daysAgo(5), status: 'OK' },
+        { id: generateId('STK'), product: 'Jus de goyave', category: 'Boissons', quantity: 2, unit: 'paquet', threshold: 5, buyPrice: 60000, value: 120000, supplier: 'Distributeur Boissons', lastEntry: daysAgo(7), status: 'Critique' },
+        { id: generateId('STK'), product: 'Crevettes fraîches', category: 'Cuisine', quantity: 4, unit: 'kg', threshold: 3, buyPrice: 120000, value: 480000, supplier: 'Pêcheur du port', lastEntry: daysAgo(1), status: 'OK' },
+        { id: generateId('STK'), product: 'Produits nettoyage', category: 'Nettoyage', quantity: 10, unit: 'pièce', threshold: 4, buyPrice: 20000, value: 200000, supplier: 'Quincaillerie', lastEntry: daysAgo(10), status: 'OK' },
+        { id: generateId('STK'), product: 'Draps', category: 'Chambre', quantity: 1, unit: 'pièce', threshold: 6, buyPrice: 150000, value: 150000, supplier: 'Fournisseur Textile', lastEntry: daysAgo(15), status: 'Critique' },
+        { id: generateId('STK'), product: 'Savon invité', category: 'Chambre', quantity: 20, unit: 'pièce', threshold: 10, buyPrice: 5000, value: 100000, supplier: 'Grossiste Hygiène', lastEntry: daysAgo(4), status: 'OK' }
     ];
 
     const expenses = [
-        { id: generateId('DEP'), date: today(), description: 'Achat produits alimentaires', category: 'Achats restaurant', supplier: 'Marché Central', amount: 45000, payment: 'Espèces', reference: '', note: '' },
-        { id: generateId('DEP'), date: daysAgo(1), description: 'Salaire personnel (acompte)', category: 'Salaires', supplier: 'Personnel', amount: 150000, payment: 'Mobile Money', reference: 'SAL-202401', note: 'Acompte mi-mois' },
-        { id: generateId('DEP'), date: daysAgo(2), description: 'Facture électricité', category: 'Électricité', supplier: 'EDM', amount: 85000, payment: 'Mobile Money', reference: 'ELEC-2024', note: '' },
-        { id: generateId('DEP'), date: daysAgo(3), description: 'Maintenance climatisation', category: 'Maintenance', supplier: 'Techni-Froid', amount: 35000, payment: 'Espèces', reference: '', note: 'Chambre Deluxe 02' },
-        { id: generateId('DEP'), date: daysAgo(4), description: 'Achat boissons', category: 'Achats restaurant', supplier: 'Distributeur', amount: 62000, payment: 'Espèces', reference: '', note: '' },
-        { id: generateId('DEP'), date: daysAgo(5), description: 'Facture Internet', category: 'Internet', supplier: 'Orange Mali', amount: 25000, payment: 'Mobile Money', reference: '', note: '' }
+        { id: generateId('DEP'), date: today(), description: 'Achat produits alimentaires', category: 'Achats restaurant', supplier: 'Marché Bazarikely', amount: 450000, payment: 'Espèces', reference: '', note: '' },
+        { id: generateId('DEP'), date: daysAgo(1), description: 'Salaire personnel (acompte)', category: 'Salaires', supplier: 'Personnel', amount: 1500000, payment: 'MVola', reference: 'SAL-202401', note: 'Acompte mi-mois' },
+        { id: generateId('DEP'), date: daysAgo(2), description: 'Facture électricité JIRAMA', category: 'Électricité', supplier: 'JIRAMA', amount: 850000, payment: 'MVola', reference: 'ELEC-2024', note: '' },
+        { id: generateId('DEP'), date: daysAgo(3), description: 'Maintenance climatisation', category: 'Maintenance', supplier: 'Techni-Froid Tana', amount: 350000, payment: 'Espèces', reference: '', note: 'Chambre Deluxe 02' },
+        { id: generateId('DEP'), date: daysAgo(4), description: 'Achat boissons', category: 'Achats restaurant', supplier: 'Distributeur', amount: 620000, payment: 'Espèces', reference: '', note: '' },
+        { id: generateId('DEP'), date: daysAgo(5), description: 'Facture Internet', category: 'Internet', supplier: 'Telma', amount: 250000, payment: 'MVola', reference: '', note: '' }
     ];
 
     const staff = [
-        { id: generateId('STF'), name: 'Oumar Diarra', position: 'Livreur', phone: '+223 66 11 22 33', status: 'Présent', shift: 'Matin/Soir', tasks: 'Livraisons du jour', note: '' },
-        { id: generateId('STF'), name: 'Aminata Coulibaly', position: 'Cuisine', phone: '+223 79 22 33 44', status: 'Présent', shift: 'Matin', tasks: 'Préparation déjeuner', note: '' },
-        { id: generateId('STF'), name: 'Sékou Bah', position: 'Livreur', phone: '+223 65 44 55 66', status: 'Présent', shift: 'Soir', tasks: 'Livraisons après-midi', note: '' },
-        { id: generateId('STF'), name: 'Kadiatou Diallo', position: 'Réception', phone: '+223 78 33 44 55', status: 'Présent', shift: 'Journée', tasks: 'Accueil clients, check-in/out', note: '' },
-        { id: generateId('STF'), name: 'Boubacar Sangaré', position: 'Serveur', phone: '+223 76 55 66 77', status: 'Absent', shift: '-', tasks: '', note: 'Congé maladie' },
-        { id: generateId('STF'), name: 'Fanta Traoré', position: 'Ménage', phone: '+223 66 77 88 99', status: 'Présent', shift: 'Matin', tasks: 'Nettoyage Appart 3C, chambres étage 2', note: '' }
+        { id: generateId('STF'), name: 'Tsiry Rakoto', position: 'Livreur', phone: '+261 34 11 223 34', status: 'Présent', shift: 'Matin/Soir', tasks: 'Livraisons du jour', note: '' },
+        { id: generateId('STF'), name: 'Sahondra Razafindrakoto', position: 'Cuisine', phone: '+261 32 22 334 45', status: 'Présent', shift: 'Matin', tasks: 'Préparation déjeuner', note: '' },
+        { id: generateId('STF'), name: 'Faniry Andria', position: 'Livreur', phone: '+261 33 44 556 67', status: 'Présent', shift: 'Soir', tasks: 'Livraisons après-midi', note: '' },
+        { id: generateId('STF'), name: 'Miora Rakotondrabe', position: 'Réception', phone: '+261 34 33 445 56', status: 'Présent', shift: 'Journée', tasks: 'Accueil clients, check-in/out', note: '' },
+        { id: generateId('STF'), name: 'Henintsoa Andriamasy', position: 'Serveur', phone: '+261 32 55 667 78', status: 'Absent', shift: '-', tasks: '', note: 'Congé maladie' },
+        { id: generateId('STF'), name: 'Lalaina Ranaivo', position: 'Ménage', phone: '+261 33 77 889 90', status: 'Présent', shift: 'Matin', tasks: 'Nettoyage Appart 3C, chambres étage 2', note: '' }
     ];
 
     setData('clients', clients);
@@ -140,7 +140,7 @@ function loadDemoData() {
     setData('stock', stock);
     setData('expenses', expenses);
     setData('staff', staff);
-    setData('settings', { name: 'Le Paradisier', currency: 'FCFA', phone: '+223 70 00 00 00', address: 'Bamako, Mali' });
+    setData('settings', { name: 'Le Paradisier', currency: 'Ar', phone: '+261 34 00 000 00', address: 'Toamasina, Madagascar' });
     setData('initialized', true);
 }
 
@@ -698,7 +698,7 @@ function openOrderForm(order = null) {
             </div>
             <div class="form-group"><label>Articles commandés</label><textarea class="form-control" name="items" required>${o.items || ''}</textarea></div>
             <div class="form-row">
-                <div class="form-group"><label>Mode paiement</label><select class="form-control" name="payment"><option ${o.payment === 'Espèces' ? 'selected' : ''}>Espèces</option><option ${o.payment === 'Mobile Money' ? 'selected' : ''}>Mobile Money</option><option ${o.payment === 'Carte' ? 'selected' : ''}>Carte</option><option ${o.payment === 'Non payé' ? 'selected' : ''}>Non payé</option></select></div>
+                <div class="form-group"><label>Mode paiement</label><select class="form-control" name="payment"><option ${o.payment === 'Espèces' ? 'selected' : ''}>Espèces</option><option ${o.payment === 'MVola' ? 'selected' : ''}>MVola</option><option ${o.payment === 'Orange Money' ? 'selected' : ''}>Orange Money</option><option ${o.payment === 'Carte' ? 'selected' : ''}>Carte</option><option ${o.payment === 'Non payé' ? 'selected' : ''}>Non payé</option></select></div>
                 <div class="form-group"><label>Statut paiement</label><select class="form-control" name="paymentStatus"><option ${o.paymentStatus === 'Payé' ? 'selected' : ''}>Payé</option><option ${o.paymentStatus === 'En attente' ? 'selected' : ''}>En attente</option></select></div>
             </div>
             <div class="form-group"><label>Statut commande</label><select class="form-control" name="status"><option ${o.status === 'À préparer' ? 'selected' : ''}>À préparer</option><option ${o.status === 'En préparation' ? 'selected' : ''}>En préparation</option><option ${o.status === 'Prête' ? 'selected' : ''}>Prête</option><option ${o.status === 'Livrée' ? 'selected' : ''}>Livrée</option><option ${o.status === 'Annulée' ? 'selected' : ''}>Annulée</option></select></div>
@@ -848,7 +848,7 @@ function renderClients() {
             <td>${formatDate(c.lastVisit)}</td>
             <td><span class="status ${c.status === 'VIP' ? 'gold' : c.status === 'Fidèle' ? 'green' : c.status === 'À relancer' ? 'orange' : 'blue'}">${c.status}</span></td>
             <td class="actions-cell">
-                <a href="https://wa.me/${(c.phone || '').replace(/[^0-9]/g, '')}?text=Bonjour ${c.name}, c'est Le Paradisier 🌴" target="_blank" class="action-btn whatsapp" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://wa.me/${(c.phone || '').replace(/[^0-9]/g, '')}?text=Bonjour ${c.name}, c'est Le Paradisier 🌴 - Toamasina" target="_blank" class="action-btn whatsapp" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
                 <button class="action-btn edit" onclick="editClient('${c.id}')"><i class="fas fa-pen"></i></button>
                 <button class="action-btn delete" onclick="deleteClient('${c.id}')"><i class="fas fa-trash"></i></button>
             </td>
@@ -1044,7 +1044,7 @@ function openExpenseForm(expense = null) {
                 <div class="form-group"><label>Fournisseur</label><input class="form-control" name="supplier" value="${e.supplier || ''}"></div>
             </div>
             <div class="form-row">
-                <div class="form-group"><label>Mode paiement</label><select class="form-control" name="payment"><option ${e.payment === 'Espèces' ? 'selected' : ''}>Espèces</option><option ${e.payment === 'Mobile Money' ? 'selected' : ''}>Mobile Money</option><option ${e.payment === 'Carte' ? 'selected' : ''}>Carte</option><option ${e.payment === 'Virement' ? 'selected' : ''}>Virement</option></select></div>
+                <div class="form-group"><label>Mode paiement</label><select class="form-control" name="payment"><option ${e.payment === 'Espèces' ? 'selected' : ''}>Espèces</option><option ${e.payment === 'MVola' ? 'selected' : ''}>MVola</option><option ${e.payment === 'Orange Money' ? 'selected' : ''}>Orange Money</option><option ${e.payment === 'Carte' ? 'selected' : ''}>Carte</option><option ${e.payment === 'Virement' ? 'selected' : ''}>Virement</option></select></div>
                 <div class="form-group"><label>Référence</label><input class="form-control" name="reference" value="${e.reference || ''}"></div>
             </div>
             <div class="form-group"><label>Note</label><textarea class="form-control" name="note">${e.note || ''}</textarea></div>
@@ -1447,7 +1447,7 @@ function viewInvoice(id, client, desc, amount, date, type, status) {
     openModal('Facture ' + id, `
         <div style="text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--primary)">
             <h2 style="color:var(--primary);margin-bottom:4px">🌴 ${settings.name || 'Le Paradisier'}</h2>
-            <p style="font-size:12px;color:var(--text-gray)">${settings.address || 'Bamako, Mali'} | ${settings.phone || ''}</p>
+            <p style="font-size:12px;color:var(--text-gray)">${settings.address || 'Toamasina, Madagascar'} | ${settings.phone || ''}</p>
         </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:16px">
             <div><strong>Facture :</strong> ${id}<br><strong>Date :</strong> ${formatDate(date)}</div>
@@ -1601,7 +1601,7 @@ function renderSettings() {
                 <form onsubmit="saveSettings(event)">
                     <div class="form-row">
                         <div class="form-group"><label>Nom établissement</label><input class="form-control" name="name" value="${settings.name || 'Le Paradisier'}"></div>
-                        <div class="form-group"><label>Devise</label><select class="form-control" name="currency"><option ${settings.currency === 'FCFA' ? 'selected' : ''}>FCFA</option><option ${settings.currency === 'MGA' ? 'selected' : ''}>MGA</option><option ${settings.currency === 'EUR' ? 'selected' : ''}>EUR</option><option ${settings.currency === 'USD' ? 'selected' : ''}>USD</option></select></div>
+                        <div class="form-group"><label>Devise</label><select class="form-control" name="currency"><option ${settings.currency === 'Ar' ? 'selected' : ''}>Ar</option><option ${settings.currency === 'MGA' ? 'selected' : ''}>MGA</option><option ${settings.currency === 'EUR' ? 'selected' : ''}>EUR</option><option ${settings.currency === 'USD' ? 'selected' : ''}>USD</option></select></div>
                     </div>
                     <div class="form-row">
                         <div class="form-group"><label>Téléphone WhatsApp</label><input class="form-control" name="phone" value="${settings.phone || ''}"></div>
