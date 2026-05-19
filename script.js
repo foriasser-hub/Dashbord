@@ -1,5 +1,6 @@
 /* ============================================
    LE PARADISIER MANAGER - Application Logic
+   Version sécurisée avec protection XSS, authentification et chiffrement
    ============================================ */
 
 // ===== APP STATE & CONFIG =====
@@ -11,8 +12,24 @@ const APP = {
 };
 
 // ===== UTILITY FUNCTIONS =====
+// Utilise la génération d'ID sécurisée du module security.js
 function generateId(prefix) {
+    if (typeof secureGenerateId === 'function') {
+        return secureGenerateId(prefix);
+    }
+    // Fallback si security.js n'est pas chargé
     return prefix + '-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+}
+
+// Alias pour l'échappement HTML (protection XSS)
+function escapeHtml(text) {
+    if (typeof Security !== 'undefined' && Security.escapeHtml) {
+        return Security.escapeHtml(text);
+    }
+    if (text === null || text === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
 }
 
 function formatMoney(amount) {
@@ -178,21 +195,37 @@ function loadDemoData() {
 // ===== TOAST & MODAL =====
 function showToast(message, type = 'success') {
     const container = document.getElementById('toastContainer');
+    if (!container) return;
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}"></i> ${message}`;
+    // Protection XSS: utiliser textContent au lieu de innerHTML pour le message
+    const icon = document.createElement('i');
+    icon.className = `fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}`;
+    toast.appendChild(icon);
+    const text = document.createElement('span');
+    text.textContent = ' ' + message;
+    toast.appendChild(text);
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3500);
+    
+    // Audit log
+    if (typeof AuditLog !== 'undefined') {
+        AuditLog.log('TOAST_SHOWN', { message, type });
+    }
 }
 
 function openModal(title, bodyHtml) {
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('modalBody').innerHTML = bodyHtml;
-    document.getElementById('modalOverlay').classList.add('active');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalBody) modalBody.innerHTML = bodyHtml;
+    if (modalOverlay) modalOverlay.classList.add('active');
 }
 
 function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('active');
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (modalOverlay) modalOverlay.classList.remove('active');
 }
 
 // ===== NAVIGATION =====
@@ -501,17 +534,17 @@ function renderReservations() {
                 <tbody>
                     ${reservations.map(r => `
                     <tr>
-                        <td><strong>${r.id}</strong></td>
-                        <td>${r.client}<br><small style="color:var(--text-gray)">${r.phone}</small></td>
-                        <td>${r.unit}</td>
+                        <td><strong>${escapeHtml(r.id)}</strong></td>
+                        <td>${escapeHtml(r.client)}<br><small style="color:var(--text-gray)">${escapeHtml(r.phone)}</small></td>
+                        <td>${escapeHtml(r.unit)}</td>
                         <td>${formatDate(r.dateIn)}</td>
                         <td>${formatDate(r.dateOut)}</td>
                         <td><strong>${formatMoney(r.total)}</strong></td>
-                        <td><span class="status ${r.paymentStatus === 'Payé' ? 'green' : r.paymentStatus === 'Acompte' ? 'orange' : 'red'}">${r.paymentStatus}</span></td>
-                        <td><span class="status ${r.status === 'Confirmée' ? 'green' : r.status === 'En attente' ? 'orange' : r.status === 'Annulée' ? 'red' : 'blue'}">${r.status}</span></td>
+                        <td><span class="status ${r.paymentStatus === 'Payé' ? 'green' : r.paymentStatus === 'Acompte' ? 'orange' : 'red'}">${escapeHtml(r.paymentStatus)}</span></td>
+                        <td><span class="status ${r.status === 'Confirmée' ? 'green' : r.status === 'En attente' ? 'orange' : r.status === 'Annulée' ? 'red' : 'blue'}">${escapeHtml(r.status)}</span></td>
                         <td class="actions-cell">
-                            <button class="action-btn edit" onclick="editReservation('${r.id}')" title="Modifier"><i class="fas fa-pen"></i></button>
-                            <button class="action-btn delete" onclick="deleteReservation('${r.id}')" title="Supprimer"><i class="fas fa-trash"></i></button>
+                            <button class="action-btn edit" onclick="editReservation('${escapeHtml(r.id)}')" title="Modifier"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn delete" onclick="deleteReservation('${escapeHtml(r.id)}')" title="Supprimer"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>`).join('')}
                 </tbody>
@@ -565,6 +598,31 @@ function calcReservation(form) {
 function saveReservation(e, editId) {
     e.preventDefault();
     const form = e.target;
+    
+    // Validation des entrées
+    if (typeof Validator !== 'undefined') {
+        const validation = Validator.validateForm({
+            client: form.client.value,
+            phone: form.phone.value,
+            pricePerNight: form.pricePerNight.value
+        }, {
+            client: { required: true, label: 'Client', maxLength: 100 },
+            phone: { required: true, type: 'phone', label: 'Téléphone' },
+            pricePerNight: { required: true, type: 'amount', label: 'Prix par nuit' }
+        });
+        
+        if (!validation.valid) {
+            showToast(validation.errors[0], 'error');
+            return;
+        }
+    }
+    
+    // Rate limiting
+    if (typeof RateLimiter !== 'undefined' && !RateLimiter.canPerform('saveReservation', 10)) {
+        showToast('Trop de requêtes. Veuillez patienter.', 'error');
+        return;
+    }
+    
     const reservations = getData('reservations') || [];
     const dateIn = new Date(form.dateIn.value);
     const dateOut = new Date(form.dateOut.value);
@@ -574,8 +632,8 @@ function saveReservation(e, editId) {
 
     const data = {
         id: editId || 'RSV-' + String(reservations.length + 1).padStart(3, '0'),
-        client: form.client.value,
-        phone: form.phone.value,
+        client: form.client.value.trim(),
+        phone: form.phone.value.trim(),
         type: form.type.value,
         unit: form.unit.value,
         dateIn: form.dateIn.value,
@@ -587,7 +645,7 @@ function saveReservation(e, editId) {
         remaining: total - deposit,
         paymentStatus: form.paymentStatus.value,
         status: form.status.value,
-        note: form.note.value
+        note: form.note.value.trim()
     };
 
     if (editId) {
@@ -597,6 +655,12 @@ function saveReservation(e, editId) {
         reservations.push(data);
     }
     setData('reservations', reservations);
+    
+    // Audit log
+    if (typeof AuditLog !== 'undefined') {
+        AuditLog.log(editId ? 'RESERVATION_UPDATED' : 'RESERVATION_CREATED', { id: data.id, client: data.client });
+    }
+    
     closeModal();
     showToast('Réservation enregistrée');
     navigateTo('reservations');
@@ -762,17 +826,17 @@ function renderRestaurant() {
     <div class="card"><div class="table-container">
         <table id="ordersTable"><thead><tr><th>ID</th><th>Heure</th><th>Client</th><th>Type</th><th>Articles</th><th>Montant</th><th>Paiement</th><th>Statut</th><th>Actions</th></tr></thead>
         <tbody>${orders.map(o => `<tr>
-            <td><strong>${o.id}</strong></td>
+            <td><strong>${escapeHtml(o.id)}</strong></td>
             <td>${o.time ? new Date(o.time).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) : '-'}</td>
-            <td>${o.client}</td>
-            <td><span class="status ${o.type === 'Livraison' ? 'blue' : 'gray'}">${o.type}</span></td>
-            <td style="max-width:180px">${o.items}</td>
+            <td>${escapeHtml(o.client)}</td>
+            <td><span class="status ${o.type === 'Livraison' ? 'blue' : 'gray'}">${escapeHtml(o.type)}</span></td>
+            <td style="max-width:180px">${escapeHtml(o.items)}</td>
             <td><strong>${formatMoney(o.amount)}</strong></td>
-            <td><span class="status ${o.paymentStatus === 'Payé' ? 'green' : 'red'}">${o.paymentStatus}</span></td>
-            <td><span class="status ${o.status === 'Livrée' || o.status === 'Prête' ? 'green' : o.status === 'En préparation' ? 'orange' : o.status === 'Annulée' ? 'red' : 'blue'}">${o.status}</span></td>
+            <td><span class="status ${o.paymentStatus === 'Payé' ? 'green' : 'red'}">${escapeHtml(o.paymentStatus)}</span></td>
+            <td><span class="status ${o.status === 'Livrée' || o.status === 'Prête' ? 'green' : o.status === 'En préparation' ? 'orange' : o.status === 'Annulée' ? 'red' : 'blue'}">${escapeHtml(o.status)}</span></td>
             <td class="actions-cell">
-                <button class="action-btn edit" onclick="editOrder('${o.id}')"><i class="fas fa-pen"></i></button>
-                <button class="action-btn delete" onclick="deleteOrder('${o.id}')"><i class="fas fa-trash"></i></button>
+                <button class="action-btn edit" onclick="editOrder('${escapeHtml(o.id)}')"><i class="fas fa-pen"></i></button>
+                <button class="action-btn delete" onclick="deleteOrder('${escapeHtml(o.id)}')"><i class="fas fa-trash"></i></button>
             </td>
         </tr>`).join('')}</tbody></table>
         ${orders.length === 0 ? '<div class="empty-state"><i class="fas fa-utensils"></i><p>Aucune commande</p></div>' : ''}
@@ -2179,11 +2243,52 @@ function filterTableByCol(tableId, colIndex, value) {
 
 // ===== APP INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function () {
+    // Initialiser le système d'authentification
+    if (typeof Auth !== 'undefined') {
+        Auth.init();
+        
+        // Vérifier si l'utilisateur est authentifié
+        if (!Auth.isAuthenticated()) {
+            // Afficher l'écran de connexion
+            document.body.innerHTML = renderLoginScreen();
+            return;
+        }
+        
+        // Utilisateur authentifié - afficher l'info utilisateur
+        const user = Auth.getCurrentUser();
+        if (user) {
+            const topBarActions = document.querySelector('.top-bar-actions');
+            if (topBarActions) {
+                const userMenuHtml = `
+                    <div class="user-menu">
+                        <div class="user-avatar">${user.fullName.charAt(0).toUpperCase()}</div>
+                        <div class="user-info">
+                            <span class="user-name">${escapeHtml(user.fullName)}</span>
+                            <span class="user-role">${escapeHtml(user.role)}</span>
+                        </div>
+                    </div>
+                    <button class="logout-btn" onclick="Auth.logout()" title="Déconnexion">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                `;
+                topBarActions.insertAdjacentHTML('afterbegin', userMenuHtml);
+            }
+            
+            // Log de connexion
+            if (typeof AuditLog !== 'undefined') {
+                AuditLog.log('APP_LOADED', { user: user.username });
+            }
+        }
+    }
+
     // Load demo data if first time
     loadDemoData();
 
     // Set today's date
-    document.getElementById('todayDate').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const todayDateEl = document.getElementById('todayDate');
+    if (todayDateEl) {
+        todayDateEl.textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
 
     // Navigation
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -2194,15 +2299,24 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Menu toggle (mobile)
-    document.getElementById('menuToggle').addEventListener('click', function () {
-        document.getElementById('sidebar').classList.toggle('open');
-    });
+    const menuToggle = document.getElementById('menuToggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function () {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+    }
 
     // Modal close
-    document.getElementById('modalClose').addEventListener('click', closeModal);
-    document.getElementById('modalOverlay').addEventListener('click', function (e) {
-        if (e.target === this) closeModal();
-    });
+    const modalClose = document.getElementById('modalClose');
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (modalClose) {
+        modalClose.addEventListener('click', closeModal);
+    }
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', function (e) {
+            if (e.target === this) closeModal();
+        });
+    }
 
     // Keyboard escape
     document.addEventListener('keydown', function (e) {
