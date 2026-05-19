@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Paradisier Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="theme-color" content="#0F3D3A">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🌴</span>
+                    <div class="logo-text">
+                        <h1>Le Paradisier</h1>
+                        <span>Manager</span>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-module="dashboard">
+                    <i class="fas fa-th-large"></i><span>Tableau de bord</span>
+                </a>
+                <a href="#" class="nav-item" data-module="reservations">
+                    <i class="fas fa-calendar-check"></i><span>Réservations</span>
+                </a>
+                <a href="#" class="nav-item" data-module="rooms">
+                    <i class="fas fa-bed"></i><span>Chambres & Apparts</span>
+                </a>
+                <a href="#" class="nav-item" data-module="restaurant">
+                    <i class="fas fa-utensils"></i><span>Restaurant</span>
+                </a>
+                <a href="#" class="nav-item" data-module="deliveries">
+                    <i class="fas fa-motorcycle"></i><span>Livraisons</span>
+                </a>
+                <a href="#" class="nav-item" data-module="clients">
+                    <i class="fas fa-users"></i><span>Clients</span>
+                </a>
+
+                <a href="#" class="nav-item" data-module="stock">
+                    <i class="fas fa-boxes-stacked"></i><span>Stock</span>
+                </a>
+                <a href="#" class="nav-item" data-module="expenses">
+                    <i class="fas fa-receipt"></i><span>Dépenses</span>
+                </a>
+                <a href="#" class="nav-item" data-module="finances">
+                    <i class="fas fa-chart-line"></i><span>Finances</span>
+                </a>
+                <a href="#" class="nav-item" data-module="staff">
+                    <i class="fas fa-user-tie"></i><span>Personnel</span>
+                </a>
+                <a href="#" class="nav-item" data-module="reports">
+                    <i class="fas fa-file-chart-line"></i><span>Rapports</span>
+                </a>
+                <a href="#" class="nav-item" data-module="settings">
+                    <i class="fas fa-gear"></i><span>Paramètres</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>© 2024 Le Paradisier</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="top-bar-title">
+                    <h2 id="pageTitle">Tableau de bord</h2>
+                    <span class="today-date" id="todayDate"></span>
+                </div>
+                <div class="top-bar-actions">
+                    <button class="btn-icon" title="Notifications" id="notifBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge" id="notifBadge">3</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-area" id="contentArea">
+                <!-- Dynamic content loaded here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Titre</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
