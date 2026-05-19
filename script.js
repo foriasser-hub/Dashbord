@@ -44,6 +44,257 @@ function daysAgo(n) {
     return d.toISOString().split('T')[0];
 }
 
+// ===== ACCOUNTING INTEGRATION SYSTEM =====
+// Sources de référence pour la comptabilité
+const ACCOUNTING_SOURCES = {
+    RESTAURANT: 'Restaurant',
+    HEBERGEMENT: 'Hébergement',
+    LIVRAISON: 'Livraison',
+    DEPENSE: 'Dépense',
+    FACTURE: 'Facture',
+    MANUEL: 'Manuel'
+};
+
+// Créer ou mettre à jour une transaction comptable depuis un autre module
+function syncToAccounting(sourceType, sourceId, data) {
+    const txs = getData('accounting') || [];
+    const sourceRef = `${sourceType}:${sourceId}`;
+    
+    // Chercher une transaction existante avec la même référence
+    const existingIdx = txs.findIndex(t => t.sourceRef === sourceRef);
+    
+    const transaction = {
+        id: existingIdx >= 0 ? txs[existingIdx].id : generateId('ACC'),
+        date: data.date || today(),
+        type: data.type, // 'Revenu' ou 'Dépense'
+        category: data.category,
+        source: sourceType,
+        sourceRef: sourceRef,
+        description: data.description,
+        amount: data.amount || 0,
+        payment: data.payment || 'Espèces',
+        status: data.status || 'Payé',
+        note: data.note || '',
+        linkedId: sourceId
+    };
+    
+    if (existingIdx >= 0) {
+        txs[existingIdx] = transaction;
+    } else {
+        txs.push(transaction);
+    }
+    
+    setData('accounting', txs);
+    return transaction;
+}
+
+// Supprimer une transaction comptable liée à une source
+function removeFromAccounting(sourceType, sourceId) {
+    const txs = getData('accounting') || [];
+    const sourceRef = `${sourceType}:${sourceId}`;
+    const filtered = txs.filter(t => t.sourceRef !== sourceRef);
+    setData('accounting', filtered);
+}
+
+// Vérifier si une transaction existe déjà pour éviter les doublons
+function accountingTransactionExists(sourceType, sourceId) {
+    const txs = getData('accounting') || [];
+    const sourceRef = `${sourceType}:${sourceId}`;
+    return txs.some(t => t.sourceRef === sourceRef);
+}
+
+// Synchroniser une commande restaurant vers la comptabilité
+function syncOrderToAccounting(order) {
+    if (!order || !order.id) return;
+    
+    // Seulement si payé, créer/mettre à jour la transaction
+    if (order.paymentStatus === 'Payé') {
+        syncToAccounting(ACCOUNTING_SOURCES.RESTAURANT, order.id, {
+            date: order.time ? order.time.split('T')[0] : today(),
+            type: 'Revenu',
+            category: 'Restaurant',
+            description: `Commande ${order.id} — ${order.client}`,
+            amount: order.amount,
+            payment: order.payment === 'MVola' || order.payment === 'Orange Money' ? 'Mobile Money' : order.payment,
+            status: 'Payé',
+            note: order.items ? order.items.substring(0, 50) : ''
+        });
+    } else {
+        // Si non payé, supprimer la transaction si elle existe
+        removeFromAccounting(ACCOUNTING_SOURCES.RESTAURANT, order.id);
+    }
+}
+
+// Synchroniser une réservation vers la comptabilité
+function syncReservationToAccounting(reservation) {
+    if (!reservation || !reservation.id) return;
+    
+    const sourceType = reservation.type === 'Appartement' ? 'Appartements' : 'Chambres';
+    
+    if (reservation.paymentStatus === 'Payé') {
+        // Paiement complet
+        syncToAccounting(ACCOUNTING_SOURCES.HEBERGEMENT, reservation.id, {
+            date: reservation.dateIn || today(),
+            type: 'Revenu',
+            category: 'Hébergement',
+            description: `Réservation ${reservation.id} — ${reservation.client} (${reservation.unit})`,
+            amount: reservation.total,
+            payment: 'Mobile Money',
+            status: 'Payé',
+            note: `${reservation.nights} nuits × ${formatMoney(reservation.pricePerNight)}`
+        });
+    } else if (reservation.paymentStatus === 'Acompte' && reservation.deposit > 0) {
+        // Acompte versé
+        syncToAccounting(ACCOUNTING_SOURCES.HEBERGEMENT, reservation.id, {
+            date: reservation.dateIn || today(),
+            type: 'Revenu',
+            category: 'Hébergement',
+            description: `Acompte réservation ${reservation.id} — ${reservation.client} (${reservation.unit})`,
+            amount: reservation.deposit,
+            payment: 'Mobile Money',
+            status: 'Payé',
+            note: `Acompte ${formatMoney(reservation.deposit)} / ${formatMoney(reservation.total)} total`
+        });
+    } else {
+        // En attente - pas de transaction comptable payée
+        removeFromAccounting(ACCOUNTING_SOURCES.HEBERGEMENT, reservation.id);
+    }
+}
+
+// Synchroniser une dépense vers la comptabilité
+function syncExpenseToAccounting(expense) {
+    if (!expense || !expense.id) return;
+    
+    syncToAccounting(ACCOUNTING_SOURCES.DEPENSE, expense.id, {
+        date: expense.date || today(),
+        type: 'Dépense',
+        category: mapExpenseCategory(expense.category),
+        description: expense.description,
+        amount: expense.amount,
+        payment: expense.payment === 'MVola' || expense.payment === 'Orange Money' ? 'Mobile Money' : expense.payment,
+        status: 'Payé',
+        note: expense.supplier ? `Fournisseur: ${expense.supplier}` : ''
+    });
+}
+
+// Synchroniser une livraison (frais de livraison) vers la comptabilité
+function syncDeliveryToAccounting(delivery) {
+    if (!delivery || !delivery.id) return;
+    
+    if (delivery.payment === 'Payé' && delivery.deliveryFee > 0) {
+        syncToAccounting(ACCOUNTING_SOURCES.LIVRAISON, delivery.id, {
+            date: today(),
+            type: 'Revenu',
+            category: 'Livraison',
+            description: `Frais livraison ${delivery.id} — ${delivery.client}`,
+            amount: delivery.deliveryFee,
+            payment: 'Espèces',
+            status: 'Payé',
+            note: delivery.address || ''
+        });
+    } else {
+        removeFromAccounting(ACCOUNTING_SOURCES.LIVRAISON, delivery.id);
+    }
+}
+
+// Mapper les catégories de dépenses vers les catégories comptables
+function mapExpenseCategory(expenseCategory) {
+    const mapping = {
+        'Achats restaurant': 'Achats',
+        'Salaires': 'Salaires',
+        'Électricité': 'Charges',
+        'Eau': 'Charges',
+        'Internet': 'Charges',
+        'Maintenance': 'Maintenance',
+        'Nettoyage': 'Achats',
+        'Transport': 'Charges',
+        'Marketing': 'Marketing',
+        'Autre': 'Autre'
+    };
+    return mapping[expenseCategory] || 'Autre';
+}
+
+// Obtenir toutes les données consolidées pour le tableau de bord
+function getConsolidatedAccountingData() {
+    const txs = getData('accounting') || [];
+    const orders = getData('orders') || [];
+    const reservations = getData('reservations') || [];
+    const deliveries = getData('deliveries') || [];
+    const invoices = getData('invoices') || [];
+    
+    const todayStr = today();
+    
+    // Revenus du jour depuis la comptabilité
+    const revenusJour = txs
+        .filter(t => t.type === 'Revenu' && t.status === 'Payé' && t.date === todayStr)
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
+    
+    // Dépenses du jour depuis la comptabilité
+    const depensesJour = txs
+        .filter(t => t.type === 'Dépense' && t.status === 'Payé' && t.date === todayStr)
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
+    
+    // Bénéfice net du jour
+    const beneficeJour = revenusJour - depensesJour;
+    
+    // Paiements en attente consolidés (éviter les doublons)
+    const pendingReservations = reservations
+        .filter(r => r.paymentStatus !== 'Payé')
+        .map(r => ({
+            type: 'Réservation',
+            id: r.id,
+            client: r.client,
+            amount: r.remaining || 0,
+            status: r.paymentStatus,
+            date: r.dateIn
+        }));
+    
+    const pendingOrders = orders
+        .filter(o => o.paymentStatus !== 'Payé')
+        .map(o => ({
+            type: 'Commande',
+            id: o.id,
+            client: o.client,
+            amount: o.amount || 0,
+            status: o.paymentStatus,
+            date: o.time ? o.time.split('T')[0] : today()
+        }));
+    
+    const pendingDeliveries = deliveries
+        .filter(d => d.payment === 'À encaisser')
+        .map(d => ({
+            type: 'Livraison',
+            id: d.id,
+            client: d.client,
+            amount: d.total || 0,
+            status: 'À encaisser',
+            date: today()
+        }));
+    
+    // Transactions comptables manuelles en attente
+    const pendingAccounting = txs
+        .filter(t => t.status === 'En attente' && !t.sourceRef)
+        .map(t => ({
+            type: t.type === 'Revenu' ? 'Revenu manuel' : 'Dépense manuelle',
+            id: t.id,
+            client: t.description,
+            amount: t.amount || 0,
+            status: t.status,
+            date: t.date
+        }));
+    
+    const allPending = [...pendingReservations, ...pendingOrders, ...pendingDeliveries, ...pendingAccounting];
+    const totalPending = allPending.reduce((sum, p) => sum + (p.amount || 0), 0);
+    
+    return {
+        revenusJour,
+        depensesJour,
+        beneficeJour,
+        allPending,
+        totalPending
+    };
+}
+
 // ===== LOCAL STORAGE =====
 function getData(key) {
     try {
@@ -247,22 +498,23 @@ function renderModule(module) {
 function renderDashboard() {
     const orders = getData('orders') || [];
     const reservations = getData('reservations') || [];
-    const expenses = getData('expenses') || [];
     const rooms = getData('rooms') || [];
     const stock = getData('stock') || [];
     const staff = getData('staff') || [];
 
+    // Utiliser les données consolidées de la comptabilité
+    const consolidated = getConsolidatedAccountingData();
+    const revenueToday = consolidated.revenusJour;
+    const expenseToday = consolidated.depensesJour;
+    const profit = consolidated.beneficeJour;
+    const pendingPayments = consolidated.totalPending;
+    const pendingCount = consolidated.allPending.length;
+
     const todayOrders = orders.filter(o => o.time && o.time.startsWith(today()));
-    const todayExpenses = expenses.filter(e => e.date === today());
-    const revenueToday = todayOrders.filter(o => o.paymentStatus === 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
-    const expenseToday = todayExpenses.reduce((s, e) => s + (e.amount || 0), 0);
-    const profit = revenueToday - expenseToday;
     const todayRes = reservations.filter(r => r.dateIn === today() || r.status === 'Confirmée');
     const occupied = rooms.filter(r => r.status === 'Occupé').length;
     const totalRooms = rooms.length;
     const occupancy = totalRooms > 0 ? Math.round((occupied / totalRooms) * 100) : 0;
-    const pendingPayments = reservations.filter(r => r.paymentStatus !== 'Payé').reduce((s, r) => s + (r.remaining || 0), 0)
-        + orders.filter(o => o.paymentStatus !== 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
     const criticalStock = stock.filter(s => s.status === 'Critique');
     const presentStaff = staff.filter(s => s.status === 'Présent');
 
@@ -292,7 +544,7 @@ function renderDashboard() {
             <div class="kpi-info">
                 <div class="label">Dépenses du jour</div>
                 <div class="value">${formatMoney(expenseToday)}</div>
-                <div class="trend down"><i class="fas fa-receipt"></i> ${todayExpenses.length} dépense(s)</div>
+                <div class="trend down"><i class="fas fa-receipt"></i> Depuis comptabilité</div>
             </div>
         </div>
         <div class="kpi-card">
@@ -332,7 +584,7 @@ function renderDashboard() {
             <div class="kpi-info">
                 <div class="label">Paiements en attente</div>
                 <div class="value">${formatMoney(pendingPayments)}</div>
-                <div class="trend down"><i class="fas fa-exclamation"></i> À encaisser</div>
+                <div class="trend down"><i class="fas fa-exclamation"></i> ${pendingCount} en attente</div>
             </div>
         </div>
     </div>
@@ -380,9 +632,7 @@ function renderDashboard() {
 
 // ===== CA CARD DYNAMIC UPDATE =====
 function updateCACard(period) {
-    const orders = getData('orders') || [];
-    const reservations = getData('reservations') || [];
-    const deliveries = getData('deliveries') || [];
+    const txs = getData('accounting') || [];
 
     const todayStr = today();
     const monthStr = todayStr.substring(0, 7);
@@ -390,22 +640,28 @@ function updateCACard(period) {
 
     let caResto = 0, caRooms = 0, caLiv = 0, label = '', icon = '';
 
+    // Filtrer les revenus payés depuis la comptabilité
+    const paidRevenues = txs.filter(t => t.type === 'Revenu' && t.status === 'Payé');
+
     if (period === 'jour') {
-        caResto = orders.filter(o => o.time && o.time.startsWith(todayStr) && o.paymentStatus === 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
-        caRooms = reservations.filter(r => r.dateIn === todayStr && r.paymentStatus === 'Payé').reduce((s, r) => s + (r.total || 0), 0);
-        caLiv   = deliveries.filter(d => d.payment === 'Payé').reduce((s, d) => s + (d.deliveryFee || 0), 0);
+        const dayTxs = paidRevenues.filter(t => t.date === todayStr);
+        caResto = dayTxs.filter(t => t.source === ACCOUNTING_SOURCES.RESTAURANT || t.category === 'Restaurant').reduce((s, t) => s + (t.amount || 0), 0);
+        caRooms = dayTxs.filter(t => t.source === ACCOUNTING_SOURCES.HEBERGEMENT || t.category === 'Hébergement' || t.source === 'Appartements' || t.source === 'Chambres').reduce((s, t) => s + (t.amount || 0), 0);
+        caLiv   = dayTxs.filter(t => t.source === ACCOUNTING_SOURCES.LIVRAISON || t.category === 'Livraison').reduce((s, t) => s + (t.amount || 0), 0);
         label = "Aujourd'hui · " + new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
         icon  = '📅';
     } else if (period === 'mois') {
-        caResto = orders.filter(o => o.time && o.time.startsWith(monthStr) && o.paymentStatus === 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
-        caRooms = reservations.filter(r => r.dateIn && r.dateIn.startsWith(monthStr) && r.paymentStatus === 'Payé').reduce((s, r) => s + (r.total || 0), 0);
-        caLiv   = deliveries.filter(d => d.payment === 'Payé').reduce((s, d) => s + (d.deliveryFee || 0), 0);
+        const monthTxs = paidRevenues.filter(t => t.date && t.date.startsWith(monthStr));
+        caResto = monthTxs.filter(t => t.source === ACCOUNTING_SOURCES.RESTAURANT || t.category === 'Restaurant').reduce((s, t) => s + (t.amount || 0), 0);
+        caRooms = monthTxs.filter(t => t.source === ACCOUNTING_SOURCES.HEBERGEMENT || t.category === 'Hébergement' || t.source === 'Appartements' || t.source === 'Chambres').reduce((s, t) => s + (t.amount || 0), 0);
+        caLiv   = monthTxs.filter(t => t.source === ACCOUNTING_SOURCES.LIVRAISON || t.category === 'Livraison').reduce((s, t) => s + (t.amount || 0), 0);
         label = new Date().toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
         icon  = '📆';
     } else {
-        caResto = orders.filter(o => o.time && o.time.startsWith(yearStr) && o.paymentStatus === 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
-        caRooms = reservations.filter(r => r.dateIn && r.dateIn.startsWith(yearStr) && r.paymentStatus === 'Payé').reduce((s, r) => s + (r.total || 0), 0);
-        caLiv   = deliveries.filter(d => d.payment === 'Payé').reduce((s, d) => s + (d.deliveryFee || 0), 0);
+        const yearTxs = paidRevenues.filter(t => t.date && t.date.startsWith(yearStr));
+        caResto = yearTxs.filter(t => t.source === ACCOUNTING_SOURCES.RESTAURANT || t.category === 'Restaurant').reduce((s, t) => s + (t.amount || 0), 0);
+        caRooms = yearTxs.filter(t => t.source === ACCOUNTING_SOURCES.HEBERGEMENT || t.category === 'Hébergement' || t.source === 'Appartements' || t.source === 'Chambres').reduce((s, t) => s + (t.amount || 0), 0);
+        caLiv   = yearTxs.filter(t => t.source === ACCOUNTING_SOURCES.LIVRAISON || t.category === 'Livraison').reduce((s, t) => s + (t.amount || 0), 0);
         label = 'Année ' + yearStr;
         icon  = '📊';
     }
@@ -430,19 +686,25 @@ function updateCACard(period) {
 }
 
 function initDashboardCharts() {
-    // Revenue chart
+    // Revenue chart - basé sur les données de comptabilité
     const ctx1 = document.getElementById('chartRevenue');
     if (ctx1) {
         const labels = [];
         const revenueData = [];
         const expenseData = [];
+        const txs = getData('accounting') || [];
+        
         for (let i = 6; i >= 0; i--) {
             const d = daysAgo(i);
             labels.push(new Date(d).toLocaleDateString('fr-FR', { weekday: 'short' }));
-            const orders = (getData('orders') || []).filter(o => o.time && o.time.startsWith(d) && o.paymentStatus === 'Payé');
-            revenueData.push(orders.reduce((s, o) => s + (o.amount || 0), 0) + Math.floor(Math.random() * 30000));
-            const exp = (getData('expenses') || []).filter(e => e.date === d);
-            expenseData.push(exp.reduce((s, e) => s + (e.amount || 0), 0) + Math.floor(Math.random() * 15000));
+            
+            // Revenus du jour depuis la comptabilité
+            const dayRevenues = txs.filter(t => t.type === 'Revenu' && t.status === 'Payé' && t.date === d);
+            revenueData.push(dayRevenues.reduce((s, t) => s + (t.amount || 0), 0));
+            
+            // Dépenses du jour depuis la comptabilité
+            const dayExpenses = txs.filter(t => t.type === 'Dépense' && t.status === 'Payé' && t.date === d);
+            expenseData.push(dayExpenses.reduce((s, t) => s + (t.amount || 0), 0));
         }
         charts.revenue = new Chart(ctx1, {
             type: 'line',
@@ -597,6 +859,10 @@ function saveReservation(e, editId) {
         reservations.push(data);
     }
     setData('reservations', reservations);
+    
+    // Synchroniser avec la comptabilité
+    syncReservationToAccounting(data);
+    
     closeModal();
     showToast('Réservation enregistrée');
     navigateTo('reservations');
@@ -611,6 +877,10 @@ function editReservation(id) {
 function deleteReservation(id) {
     if (!confirm('Supprimer cette réservation ?')) return;
     let reservations = getData('reservations') || [];
+    
+    // Supprimer la transaction comptable liée
+    removeFromAccounting(ACCOUNTING_SOURCES.HEBERGEMENT, id);
+    
     reservations = reservations.filter(r => r.id !== id);
     setData('reservations', reservations);
     showToast('Réservation supprimée', 'error');
@@ -818,11 +1088,26 @@ function saveOrder(e, editId) {
     if (editId) { const idx = orders.findIndex(o => o.id === editId); if (idx >= 0) { data.time = orders[idx].time; orders[idx] = data; } }
     else orders.push(data);
     setData('orders', orders);
+    
+    // Synchroniser avec la comptabilité
+    syncOrderToAccounting(data);
+    
     closeModal(); showToast('Commande enregistrée'); navigateTo('restaurant');
 }
 
 function editOrder(id) { const orders = getData('orders') || []; const o = orders.find(x => x.id === id); if (o) openOrderForm(o); }
-function deleteOrder(id) { if (!confirm('Supprimer cette commande ?')) return; setData('orders', (getData('orders') || []).filter(o => o.id !== id)); showToast('Commande supprimée', 'error'); navigateTo('restaurant'); }
+function deleteOrder(id) { 
+    if (!confirm('Supprimer cette commande ?')) return; 
+    const orders = getData('orders') || [];
+    const order = orders.find(o => o.id === id);
+    if (order) {
+        // Supprimer la transaction comptable liée
+        removeFromAccounting(ACCOUNTING_SOURCES.RESTAURANT, id);
+    }
+    setData('orders', orders.filter(o => o.id !== id)); 
+    showToast('Commande supprimée', 'error'); 
+    navigateTo('restaurant'); 
+}
 
 // ===== DELIVERIES MODULE =====
 function renderDeliveries() {
@@ -905,11 +1190,25 @@ function saveDelivery(e, editId) {
     };
     if (editId) { const idx = deliveries.findIndex(d => d.id === editId); if (idx >= 0) deliveries[idx] = data; }
     else deliveries.push(data);
-    setData('deliveries', deliveries); closeModal(); showToast('Livraison enregistrée'); navigateTo('deliveries');
+    setData('deliveries', deliveries); 
+    
+    // Synchroniser avec la comptabilité (frais de livraison)
+    syncDeliveryToAccounting(data);
+    
+    closeModal(); showToast('Livraison enregistrée'); navigateTo('deliveries');
 }
 
 function editDelivery(id) { const d = (getData('deliveries') || []).find(x => x.id === id); if (d) openDeliveryForm(d); }
-function deleteDelivery(id) { if (!confirm('Supprimer ?')) return; setData('deliveries', (getData('deliveries') || []).filter(d => d.id !== id)); showToast('Supprimé', 'error'); navigateTo('deliveries'); }
+function deleteDelivery(id) { 
+    if (!confirm('Supprimer ?')) return; 
+    
+    // Supprimer la transaction comptable liée
+    removeFromAccounting(ACCOUNTING_SOURCES.LIVRAISON, id);
+    
+    setData('deliveries', (getData('deliveries') || []).filter(d => d.id !== id)); 
+    showToast('Supprimé', 'error'); 
+    navigateTo('deliveries'); 
+}
 
 // ===== CLIENTS MODULE =====
 function renderClients() {
@@ -1159,11 +1458,25 @@ function saveExpense(ev, editId) {
     };
     if (editId) { const idx = expenses.findIndex(e => e.id === editId); if (idx >= 0) expenses[idx] = data; }
     else expenses.push(data);
-    setData('expenses', expenses); closeModal(); showToast('Dépense enregistrée'); navigateTo('expenses');
+    setData('expenses', expenses); 
+    
+    // Synchroniser avec la comptabilité
+    syncExpenseToAccounting(data);
+    
+    closeModal(); showToast('Dépense enregistrée'); navigateTo('expenses');
 }
 
 function editExpense(id) { const e = (getData('expenses') || []).find(x => x.id === id); if (e) openExpenseForm(e); }
-function deleteExpense(id) { if (!confirm('Supprimer ?')) return; setData('expenses', (getData('expenses') || []).filter(e => e.id !== id)); showToast('Supprimé', 'error'); navigateTo('expenses'); }
+function deleteExpense(id) { 
+    if (!confirm('Supprimer ?')) return; 
+    
+    // Supprimer la transaction comptable liée
+    removeFromAccounting(ACCOUNTING_SOURCES.DEPENSE, id);
+    
+    setData('expenses', (getData('expenses') || []).filter(e => e.id !== id)); 
+    showToast('Supprimé', 'error'); 
+    navigateTo('expenses'); 
+}
 
 // ===== FINANCES MODULE =====
 function renderFinances() {
@@ -1689,17 +2002,27 @@ function copyReport() {
 
 function getAccountingStats() {
     const txs = getData('accounting') || [];
+    const orders = getData('orders') || [];
+    const reservations = getData('reservations') || [];
+    const deliveries = getData('deliveries') || [];
     const todayStr = today();
 
     const revenuesPaids  = txs.filter(t => t.type === 'Revenu'  && t.status === 'Payé');
     const depensesPaids  = txs.filter(t => t.type === 'Dépense' && t.status === 'Payé');
-    const pending        = txs.filter(t => t.status === 'En attente');
+    
+    // Paiements en attente consolidés de tous les modules
+    const pendingTxs = txs.filter(t => t.status === 'En attente');
+    const pendingRes = reservations.filter(r => r.paymentStatus !== 'Payé').reduce((s, r) => s + (r.remaining || 0), 0);
+    const pendingOrders = orders.filter(o => o.paymentStatus !== 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
+    const pendingDeliveries = deliveries.filter(d => d.payment === 'À encaisser').reduce((s, d) => s + (d.total || 0), 0);
 
     const revenus   = revenuesPaids.reduce((s, t) => s + (t.amount || 0), 0);
     const depenses  = depensesPaids.reduce((s, t) => s + (t.amount || 0), 0);
     const benefice  = revenus - depenses;
     const tresorerie = revenus - depenses;   // simplifié = cash disponible estimé
-    const enAttente = pending.reduce((s, t) => s + (t.amount || 0), 0);
+    
+    // Total en attente consolidé
+    const enAttente = pendingTxs.reduce((s, t) => s + (t.amount || 0), 0) + pendingRes + pendingOrders + pendingDeliveries;
 
     const soldJourRev = txs.filter(t => t.type === 'Revenu'  && t.status === 'Payé' && t.date === todayStr).reduce((s, t) => s + (t.amount || 0), 0);
     const soldJourDep = txs.filter(t => t.type === 'Dépense' && t.status === 'Payé' && t.date === todayStr).reduce((s, t) => s + (t.amount || 0), 0);
@@ -1710,10 +2033,32 @@ function getAccountingStats() {
 
 function renderAccounting() {
     const { revenus, depenses, benefice, tresorerie, enAttente, soldeJour, txs } = getAccountingStats();
+    
+    // Compter les transactions par source
+    const autoCount = txs.filter(t => t.sourceRef).length;
+    const manualCount = txs.filter(t => !t.sourceRef).length;
 
     const filterType   = '';
     const filterCat    = '';
     const filterStatus = '';
+
+    // Fonction pour obtenir l'icône de source
+    const getSourceIcon = (source) => {
+        const icons = {
+            'Restaurant': '<i class="fas fa-utensils" style="color:#12A150"></i>',
+            'Hébergement': '<i class="fas fa-bed" style="color:#0F3D3A"></i>',
+            'Appartements': '<i class="fas fa-building" style="color:#0F3D3A"></i>',
+            'Chambres': '<i class="fas fa-door-open" style="color:#3B82F6"></i>',
+            'Livraison': '<i class="fas fa-motorcycle" style="color:#F59E0B"></i>',
+            'Dépense': '<i class="fas fa-receipt" style="color:#E5484D"></i>',
+            'Manuel': '<i class="fas fa-edit" style="color:#667085"></i>',
+            'Facture': '<i class="fas fa-file-invoice" style="color:#8B5CF6"></i>',
+            'Stock': '<i class="fas fa-boxes-stacked" style="color:#C99A2E"></i>',
+            'Salaire': '<i class="fas fa-user-tie" style="color:#667085"></i>',
+            'Maintenance': '<i class="fas fa-wrench" style="color:#E5484D"></i>',
+        };
+        return icons[source] || '<i class="fas fa-circle" style="color:#667085"></i>';
+    };
 
     return `
     <!-- KPI Grid -->
@@ -1787,6 +2132,10 @@ function renderAccounting() {
     <!-- En-tête module -->
     <div class="module-header">
         <h3>📒 Journal des transactions</h3>
+        <div style="display:flex;align-items:center;gap:12px">
+            <span class="status blue" style="font-size:11px"><i class="fas fa-link"></i> ${autoCount} auto</span>
+            <span class="status gray" style="font-size:11px"><i class="fas fa-edit"></i> ${manualCount} manuel</span>
+        </div>
         <div class="btn-group">
             <button class="btn btn-outline btn-sm" onclick="exportAccountingCSV()"><i class="fas fa-file-csv"></i> CSV</button>
             <button class="btn btn-outline btn-sm" onclick="window.print()"><i class="fas fa-print"></i> Imprimer</button>
@@ -1805,9 +2154,9 @@ function renderAccounting() {
         </select>
         <select class="filter-select" onchange="filterTableByCol('accTable', 3, this.value)">
             <option value="">Toutes sources</option>
-            <option>Restaurant</option><option>Appartements</option><option>Chambres</option>
-            <option>Livraison</option><option>Stock</option><option>Salaire</option>
-            <option>Maintenance</option><option>Autre</option>
+            <option>Restaurant</option><option>Hébergement</option><option>Appartements</option><option>Chambres</option>
+            <option>Livraison</option><option>Dépense</option><option>Stock</option><option>Salaire</option>
+            <option>Maintenance</option><option>Manuel</option><option>Facture</option><option>Autre</option>
         </select>
         <select class="filter-select" onchange="filterTableByCol('accTable', 6, this.value)">
             <option value="">Tous statuts</option>
@@ -1839,14 +2188,14 @@ function renderAccounting() {
                         <td>${formatDate(t.date)}</td>
                         <td><span class="status ${t.type === 'Revenu' ? 'green' : 'red'}">${t.type === 'Revenu' ? '▲' : '▼'} ${t.type}</span></td>
                         <td><span class="status gray">${t.category}</span></td>
-                        <td>${t.source}</td>
+                        <td>${getSourceIcon(t.source)} ${t.source}${t.sourceRef ? ' <i class="fas fa-link" style="font-size:9px;color:#667085" title="Auto-généré"></i>' : ''}</td>
                         <td style="max-width:220px;font-size:12px">${t.description}${t.note ? `<br><small style="color:var(--text-gray)">${t.note}</small>` : ''}</td>
                         <td><strong style="color:${t.type === 'Revenu' ? 'var(--green)' : 'var(--red)'}">${formatMoney(t.amount)}</strong></td>
                         <td><span class="status ${t.status === 'Payé' ? 'green' : 'orange'}">${t.status}</span></td>
                         <td><span class="acc-pay-badge">${t.payment}</span></td>
                         <td class="actions-cell">
-                            <button class="action-btn edit" onclick="editAccounting('${t.id}')"><i class="fas fa-pen"></i></button>
-                            <button class="action-btn delete" onclick="deleteAccounting('${t.id}')"><i class="fas fa-trash"></i></button>
+                            <button class="action-btn edit" onclick="editAccounting('${t.id}')" title="${t.sourceRef ? 'Modifier (auto-généré)' : 'Modifier'}"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn delete" onclick="deleteAccounting('${t.id}')" title="Supprimer"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>`).join('')}
                 </tbody>
@@ -1925,15 +2274,22 @@ function initAccountingCharts() {
 
 function openAccountingForm(tx = null) {
     const t = tx || {};
+    const isAutoGenerated = t.sourceRef ? true : false;
+    const sourceInfo = isAutoGenerated ? `<div class="alert-item info" style="margin-bottom:12px"><i class="fas fa-link"></i> Transaction liée à: <strong>${t.sourceRef}</strong> — Les modifications manuelles peuvent être écrasées lors de la mise à jour de la source.</div>` : '';
+    
     openModal(tx ? 'Modifier transaction' : 'Nouvelle transaction', `
+        ${sourceInfo}
         <form onsubmit="saveAccounting(event, '${t.id || ''}')">
+            <input type="hidden" name="sourceRef" value="${t.sourceRef || ''}">
+            <input type="hidden" name="linkedId" value="${t.linkedId || ''}">
             <div class="form-row">
                 <div class="form-group">
                     <label>Type</label>
-                    <select class="form-control" name="type" required>
+                    <select class="form-control" name="type" required ${isAutoGenerated ? 'disabled' : ''}>
                         <option ${t.type === 'Revenu' ? 'selected' : ''} value="Revenu">Revenu</option>
                         <option ${t.type === 'Dépense' ? 'selected' : ''} value="Dépense">Dépense</option>
                     </select>
+                    ${isAutoGenerated ? `<input type="hidden" name="type" value="${t.type}">` : ''}
                 </div>
                 <div class="form-group">
                     <label>Date</label>
@@ -1959,12 +2315,16 @@ function openAccountingForm(tx = null) {
                     <label>Source</label>
                     <select class="form-control" name="source" required>
                         <option ${t.source === 'Restaurant' ? 'selected' : ''}>Restaurant</option>
+                        <option ${t.source === 'Hébergement' ? 'selected' : ''}>Hébergement</option>
                         <option ${t.source === 'Appartements' ? 'selected' : ''}>Appartements</option>
                         <option ${t.source === 'Chambres' ? 'selected' : ''}>Chambres</option>
                         <option ${t.source === 'Livraison' ? 'selected' : ''}>Livraison</option>
+                        <option ${t.source === 'Dépense' ? 'selected' : ''}>Dépense</option>
                         <option ${t.source === 'Stock' ? 'selected' : ''}>Stock</option>
                         <option ${t.source === 'Salaire' ? 'selected' : ''}>Salaire</option>
                         <option ${t.source === 'Maintenance' ? 'selected' : ''}>Maintenance</option>
+                        <option ${t.source === 'Manuel' ? 'selected' : ''}>Manuel</option>
+                        <option ${t.source === 'Facture' ? 'selected' : ''}>Facture</option>
                         <option ${t.source === 'Autre' ? 'selected' : ''}>Autre</option>
                     </select>
                 </div>
@@ -2008,12 +2368,18 @@ function saveAccounting(e, editId) {
     e.preventDefault();
     const form = e.target;
     const txs = getData('accounting') || [];
+    
+    // Préserver les références si elles existent
+    const existingTx = editId ? txs.find(t => t.id === editId) : null;
+    
     const data = {
         id: editId || generateId('ACC'),
         date: form.date.value,
         type: form.type.value,
         category: form.category.value,
-        source: form.source.value,
+        source: form.source.value || (existingTx ? existingTx.source : ACCOUNTING_SOURCES.MANUEL),
+        sourceRef: form.sourceRef ? form.sourceRef.value : (existingTx ? existingTx.sourceRef : null),
+        linkedId: form.linkedId ? form.linkedId.value : (existingTx ? existingTx.linkedId : null),
         description: form.description.value,
         amount: parseInt(form.amount.value) || 0,
         payment: form.payment.value,
@@ -2024,6 +2390,8 @@ function saveAccounting(e, editId) {
         const idx = txs.findIndex(t => t.id === editId);
         if (idx >= 0) txs[idx] = data;
     } else {
+        // Nouvelle transaction manuelle
+        data.source = data.source || ACCOUNTING_SOURCES.MANUEL;
         txs.push(data);
     }
     setData('accounting', txs);
