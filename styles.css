@@ -1001,3 +1001,62 @@ textarea.form-control {
 .ca-tag.green  { background: rgba(18, 161, 80, 0.1);  color: var(--green); }
 .ca-tag.blue   { background: rgba(15, 61, 58, 0.1);   color: var(--primary); }
 .ca-tag.orange { background: rgba(245, 158, 11, 0.1); color: var(--orange); }
+
+
+
+/* ============================================
+   MODULE COMPTABILITÉ & TRÉSORERIE
+   ============================================ */
+
+/* Grille KPI comptabilité — 6 cartes */
+.acc-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+/* Bordure colorée selon le type de carte */
+.acc-kpi-green {
+    border-left: 3px solid var(--green);
+}
+.acc-kpi-red {
+    border-left: 3px solid var(--red);
+}
+.acc-kpi-gold {
+    border-left: 3px solid var(--gold);
+    background: linear-gradient(135deg, #ffffff 70%, rgba(201,154,46,0.04) 100%);
+}
+.acc-kpi-blue {
+    border-left: 3px solid var(--primary);
+}
+
+/* Badge mode de paiement dans le tableau */
+.acc-pay-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(15, 61, 58, 0.06);
+    color: var(--text-gray);
+    white-space: nowrap;
+}
+
+/* Animation légère sur les lignes du tableau selon le type */
+#accTable tbody tr:hover td { background: rgba(255, 248, 236, 0.6); }
+
+/* Impression — masquer les boutons d'action */
+@media print {
+    .acc-kpi-grid .kpi-card { border-left-width: 3px; }
+    #accTable .actions-cell { display: none !important; }
+}
+
+/* Responsive comptabilité */
+@media (max-width: 768px) {
+    .acc-kpi-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 480px) {
+    .acc-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
