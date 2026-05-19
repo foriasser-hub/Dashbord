@@ -16,14 +16,12 @@ function generateId(prefix) {
 }
 
 function formatMoney(amount) {
-    const settings = getData('settings') || {};
-    const currency = settings.currency || APP.currency;
-    // Format malgache : séparateur de milliers = espace, pas de décimales
+    // Format malgache : montant d'abord, Ar après — ex: 85 000 Ar
     const formatted = new Intl.NumberFormat('fr-MG', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
     }).format(amount || 0);
-    return 'Ar ' + formatted;
+    return formatted + ' Ar';
 }
 
 function formatDate(date) {
