@@ -900,3 +900,104 @@ textarea.form-control {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(15,61,58,0.15); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(15,61,58,0.25); }
+
+
+/* ============================================
+   CARTE CHIFFRE D'AFFAIRES — KPI Dashboard
+   ============================================ */
+
+/* Carte CA plus grande et mise en avant */
+.kpi-ca-card {
+    border: 1.5px solid rgba(201, 154, 46, 0.25);
+    background: linear-gradient(135deg, #ffffff 60%, rgba(201, 154, 46, 0.04) 100%);
+}
+
+.kpi-ca-card:hover {
+    border-color: rgba(201, 154, 46, 0.45);
+}
+
+/* Header de la carte : label + select côte à côte */
+.kpi-ca-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+/* Select période */
+.ca-period-select {
+    appearance: none;
+    background: rgba(201, 154, 46, 0.08);
+    border: 1px solid rgba(201, 154, 46, 0.35);
+    border-radius: 20px;
+    color: var(--gold);
+    font-family: 'Poppins', sans-serif;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 22px 3px 9px;
+    cursor: pointer;
+    outline: none;
+    transition: var(--transition);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23C99A2E' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 5px center;
+    background-size: 14px;
+    white-space: nowrap;
+}
+
+.ca-period-select:hover,
+.ca-period-select:focus {
+    background-color: rgba(201, 154, 46, 0.15);
+    border-color: var(--gold);
+}
+
+/* Valeur principale — couleur dorée */
+.kpi-ca-card .kpi-info .value {
+    color: var(--gold);
+    font-size: 24px;
+}
+
+/* Animation flash au changement de valeur */
+@keyframes caFlash {
+    0%   { opacity: 0.3; transform: scale(0.96); }
+    60%  { opacity: 1;   transform: scale(1.03); }
+    100% { opacity: 1;   transform: scale(1); }
+}
+
+.ca-flash {
+    animation: caFlash 0.35s ease;
+}
+
+/* Ligne de détail breakdown */
+.ca-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    margin-top: 7px;
+}
+
+/* Label période (ex: "📅 Aujourd'hui · 19 mai") */
+.ca-period-label {
+    font-size: 10.5px;
+    color: var(--text-gray);
+    font-style: italic;
+    width: 100%;
+    margin-bottom: 2px;
+}
+
+/* Tags colorés resto / héberg. / livr. */
+.ca-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10.5px;
+    font-weight: 500;
+}
+
+.ca-tag.green  { background: rgba(18, 161, 80, 0.1);  color: var(--green); }
+.ca-tag.blue   { background: rgba(15, 61, 58, 0.1);   color: var(--primary); }
+.ca-tag.orange { background: rgba(245, 158, 11, 0.1); color: var(--orange); }

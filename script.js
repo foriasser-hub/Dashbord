@@ -193,7 +193,7 @@ function renderModule(module) {
 
     const content = document.getElementById('contentArea');
     switch (module) {
-        case 'dashboard': content.innerHTML = renderDashboard(); initDashboardCharts(); break;
+        case 'dashboard': content.innerHTML = renderDashboard(); initDashboardCharts(); updateCACard('jour'); break;
         case 'reservations': content.innerHTML = renderReservations(); break;
         case 'rooms': content.innerHTML = renderRooms(); break;
         case 'restaurant': content.innerHTML = renderRestaurant(); break;
@@ -235,12 +235,23 @@ function renderDashboard() {
 
     return `
     <div class="kpi-grid">
-        <div class="kpi-card">
-            <div class="kpi-icon green"><i class="fas fa-arrow-up"></i></div>
+        <div class="kpi-card kpi-ca-card">
+            <div class="kpi-icon gold"><i class="fas fa-cash-register"></i></div>
             <div class="kpi-info">
-                <div class="label">Revenus du jour</div>
-                <div class="value">${formatMoney(revenueToday)}</div>
-                <div class="trend up"><i class="fas fa-arrow-up"></i> Restaurant</div>
+                <div class="kpi-ca-header">
+                    <div class="label">Chiffre d'affaires</div>
+                    <select class="ca-period-select" id="caPeriodSelect" onchange="updateCACard(this.value)">
+                        <option value="jour">Aujourd'hui</option>
+                        <option value="mois">Ce mois</option>
+                        <option value="annee">Cette année</option>
+                    </select>
+                </div>
+                <div class="value" id="caValue">${formatMoney(revenueToday)}</div>
+                <div class="ca-breakdown" id="caBreakdown">
+                    <span class="ca-tag green"><i class="fas fa-utensils"></i> Resto</span>
+                    <span class="ca-tag blue"><i class="fas fa-bed"></i> Héberg.</span>
+                    <span class="ca-tag orange"><i class="fas fa-motorcycle"></i> Livr.</span>
+                </div>
             </div>
         </div>
         <div class="kpi-card">
@@ -332,6 +343,57 @@ function renderDashboard() {
             </div>
         </div>
     </div>`;
+}
+
+// ===== CA CARD DYNAMIC UPDATE =====
+function updateCACard(period) {
+    const orders = getData('orders') || [];
+    const reservations = getData('reservations') || [];
+    const deliveries = getData('deliveries') || [];
+
+    const todayStr = today();
+    const monthStr = todayStr.substring(0, 7);
+    const yearStr  = todayStr.substring(0, 4);
+
+    let caResto = 0, caRooms = 0, caLiv = 0, label = '', icon = '';
+
+    if (period === 'jour') {
+        caResto = orders.filter(o => o.time && o.time.startsWith(todayStr) && o.paymentStatus === 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
+        caRooms = reservations.filter(r => r.dateIn === todayStr && r.paymentStatus === 'Payé').reduce((s, r) => s + (r.total || 0), 0);
+        caLiv   = deliveries.filter(d => d.payment === 'Payé').reduce((s, d) => s + (d.deliveryFee || 0), 0);
+        label = "Aujourd'hui · " + new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+        icon  = '📅';
+    } else if (period === 'mois') {
+        caResto = orders.filter(o => o.time && o.time.startsWith(monthStr) && o.paymentStatus === 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
+        caRooms = reservations.filter(r => r.dateIn && r.dateIn.startsWith(monthStr) && r.paymentStatus === 'Payé').reduce((s, r) => s + (r.total || 0), 0);
+        caLiv   = deliveries.filter(d => d.payment === 'Payé').reduce((s, d) => s + (d.deliveryFee || 0), 0);
+        label = new Date().toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
+        icon  = '📆';
+    } else {
+        caResto = orders.filter(o => o.time && o.time.startsWith(yearStr) && o.paymentStatus === 'Payé').reduce((s, o) => s + (o.amount || 0), 0);
+        caRooms = reservations.filter(r => r.dateIn && r.dateIn.startsWith(yearStr) && r.paymentStatus === 'Payé').reduce((s, r) => s + (r.total || 0), 0);
+        caLiv   = deliveries.filter(d => d.payment === 'Payé').reduce((s, d) => s + (d.deliveryFee || 0), 0);
+        label = 'Année ' + yearStr;
+        icon  = '📊';
+    }
+
+    const total = caResto + caRooms + caLiv;
+
+    const valEl = document.getElementById('caValue');
+    const bdEl  = document.getElementById('caBreakdown');
+    if (!valEl || !bdEl) return;
+
+    valEl.textContent = formatMoney(total);
+    valEl.classList.remove('ca-flash');
+    void valEl.offsetWidth; // reflow pour relancer l'animation
+    valEl.classList.add('ca-flash');
+
+    bdEl.innerHTML = `
+        <span class="ca-period-label">${icon} ${label}</span>
+        <span class="ca-tag green"><i class="fas fa-utensils"></i> ${formatMoney(caResto)}</span>
+        <span class="ca-tag blue"><i class="fas fa-bed"></i> ${formatMoney(caRooms)}</span>
+        <span class="ca-tag orange"><i class="fas fa-motorcycle"></i> ${formatMoney(caLiv)}</span>
+    `;
 }
 
 function initDashboardCharts() {
