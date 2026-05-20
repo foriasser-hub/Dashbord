@@ -1,9 +1,9 @@
 -- ===========================================
--- LE PARADISIER MANAGER - Schéma de Base de Données
--- PostgreSQL
+-- LE PARADISIER MANAGER - Script d'initialisation Supabase
+-- Copiez-collez ce fichier COMPLET dans l'éditeur SQL de Supabase
 -- ===========================================
 
--- Extension pour UUID
+-- Extension pour UUID (normalement déjà activée sur Supabase)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ===========================================
@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 
 -- ===========================================
 -- TABLE: clients
@@ -49,9 +49,9 @@ CREATE TABLE IF NOT EXISTS clients (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_clients_name ON clients(name);
-CREATE INDEX idx_clients_phone ON clients(phone);
-CREATE INDEX idx_clients_status ON clients(status);
+CREATE INDEX IF NOT EXISTS idx_clients_name ON clients(name);
+CREATE INDEX IF NOT EXISTS idx_clients_phone ON clients(phone);
+CREATE INDEX IF NOT EXISTS idx_clients_status ON clients(status);
 
 -- ===========================================
 -- TABLE: rooms
@@ -66,13 +66,13 @@ CREATE TABLE IF NOT EXISTS rooms (
     status VARCHAR(50) DEFAULT 'Disponible' CHECK (status IN ('Disponible', 'Occupé', 'Nettoyage', 'Maintenance')),
     floor VARCHAR(50),
     description TEXT,
-    equipment TEXT[], -- Array de string pour les équipements
+    equipment TEXT[],
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_rooms_status ON rooms(status);
-CREATE INDEX idx_rooms_type ON rooms(type);
+CREATE INDEX IF NOT EXISTS idx_rooms_status ON rooms(status);
+CREATE INDEX IF NOT EXISTS idx_rooms_type ON rooms(type);
 
 -- ===========================================
 -- TABLE: reservations
@@ -100,10 +100,10 @@ CREATE TABLE IF NOT EXISTS reservations (
     CONSTRAINT check_amounts CHECK (paid_amount >= 0 AND paid_amount <= total_amount)
 );
 
-CREATE INDEX idx_reservations_client ON reservations(client_id);
-CREATE INDEX idx_reservations_room ON reservations(room_id);
-CREATE INDEX idx_reservations_dates ON reservations(check_in, check_out);
-CREATE INDEX idx_reservations_status ON reservations(status);
+CREATE INDEX IF NOT EXISTS idx_reservations_client ON reservations(client_id);
+CREATE INDEX IF NOT EXISTS idx_reservations_room ON reservations(room_id);
+CREATE INDEX IF NOT EXISTS idx_reservations_dates ON reservations(check_in, check_out);
+CREATE INDEX IF NOT EXISTS idx_reservations_status ON reservations(status);
 
 -- ===========================================
 -- TABLE: restaurant_orders
@@ -113,11 +113,11 @@ CREATE TABLE IF NOT EXISTS restaurant_orders (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     order_number VARCHAR(50) UNIQUE NOT NULL,
     client_id UUID REFERENCES clients(id) ON DELETE SET NULL,
-    client_name VARCHAR(255), -- Pour les clients de passage
+    client_name VARCHAR(255),
     client_phone VARCHAR(50),
     order_type VARCHAR(50) DEFAULT 'Sur place' CHECK (order_type IN ('Sur place', 'À emporter', 'Livraison')),
-    items JSONB NOT NULL, -- Détails des items [{name, quantity, price}]
-    items_text TEXT, -- Version texte simple pour affichage
+    items JSONB NOT NULL,
+    items_text TEXT,
     total_amount DECIMAL(12, 2) NOT NULL,
     paid_amount DECIMAL(12, 2) DEFAULT 0,
     payment_method VARCHAR(50) CHECK (payment_method IN ('Espèces', 'MVola', 'Carte', 'Virement', 'Crédit')),
@@ -130,9 +130,9 @@ CREATE TABLE IF NOT EXISTS restaurant_orders (
     CONSTRAINT check_order_amounts CHECK (paid_amount >= 0 AND paid_amount <= total_amount)
 );
 
-CREATE INDEX idx_orders_client ON restaurant_orders(client_id);
-CREATE INDEX idx_orders_status ON restaurant_orders(status);
-CREATE INDEX idx_orders_date ON restaurant_orders(created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_client ON restaurant_orders(client_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON restaurant_orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_date ON restaurant_orders(created_at);
 
 -- ===========================================
 -- TABLE: deliveries
@@ -158,9 +158,9 @@ CREATE TABLE IF NOT EXISTS deliveries (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_deliveries_order ON deliveries(order_id);
-CREATE INDEX idx_deliveries_driver ON deliveries(driver_id);
-CREATE INDEX idx_deliveries_status ON deliveries(status);
+CREATE INDEX IF NOT EXISTS idx_deliveries_order ON deliveries(order_id);
+CREATE INDEX IF NOT EXISTS idx_deliveries_driver ON deliveries(driver_id);
+CREATE INDEX IF NOT EXISTS idx_deliveries_status ON deliveries(status);
 
 -- ===========================================
 -- TABLE: stock_items
@@ -191,8 +191,8 @@ CREATE TABLE IF NOT EXISTS stock_items (
     CONSTRAINT check_quantity CHECK (quantity >= 0)
 );
 
-CREATE INDEX idx_stock_category ON stock_items(category);
-CREATE INDEX idx_stock_status ON stock_items(status);
+CREATE INDEX IF NOT EXISTS idx_stock_category ON stock_items(category);
+CREATE INDEX IF NOT EXISTS idx_stock_status ON stock_items(status);
 
 -- ===========================================
 -- TABLE: expenses
@@ -218,8 +218,8 @@ CREATE TABLE IF NOT EXISTS expenses (
     CONSTRAINT check_expense_amount CHECK (amount > 0)
 );
 
-CREATE INDEX idx_expenses_date ON expenses(date);
-CREATE INDEX idx_expenses_category ON expenses(category);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);
+CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category);
 
 -- ===========================================
 -- TABLE: invoices
@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS invoices (
     invoice_number VARCHAR(50) UNIQUE NOT NULL,
     client_id UUID REFERENCES clients(id) ON DELETE SET NULL,
     service_type VARCHAR(50) CHECK (service_type IN ('Hébergement', 'Restaurant', 'Livraison', 'Autre')),
-    items JSONB, -- Détails des items
+    items JSONB,
     total_amount DECIMAL(12, 2) NOT NULL,
     paid_amount DECIMAL(12, 2) DEFAULT 0,
     remaining_amount DECIMAL(12, 2) GENERATED ALWAYS AS (total_amount - paid_amount) STORED,
@@ -243,16 +243,16 @@ CREATE TABLE IF NOT EXISTS invoices (
     CONSTRAINT check_invoice_amounts CHECK (paid_amount >= 0 AND paid_amount <= total_amount)
 );
 
-CREATE INDEX idx_invoices_client ON invoices(client_id);
-CREATE INDEX idx_invoices_status ON invoices(status);
-CREATE INDEX idx_invoices_date ON invoices(created_at);
+CREATE INDEX IF NOT EXISTS idx_invoices_client ON invoices(client_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+CREATE INDEX IF NOT EXISTS idx_invoices_date ON invoices(created_at);
 
 -- ===========================================
 -- TABLE: staff (Personnel)
 -- ===========================================
 CREATE TABLE IF NOT EXISTS staff (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL, -- Lien optionnel avec users
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
     position VARCHAR(100) NOT NULL,
     phone VARCHAR(50),
@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS staff (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_staff_status ON staff(status);
+CREATE INDEX IF NOT EXISTS idx_staff_status ON staff(status);
 
 -- ===========================================
 -- TABLE: settings
@@ -299,9 +299,9 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_audit_user ON audit_logs(user_id);
-CREATE INDEX idx_audit_action ON audit_logs(action);
-CREATE INDEX idx_audit_date ON audit_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_date ON audit_logs(created_at);
 
 -- ===========================================
 -- TABLE: refresh_tokens
@@ -316,8 +316,8 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
-CREATE INDEX idx_refresh_tokens_expires ON refresh_tokens(expires_at);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires ON refresh_tokens(expires_at);
 
 -- ===========================================
 -- FONCTIONS & TRIGGERS
@@ -367,6 +367,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS generate_reservation_number_trigger ON reservations;
 CREATE TRIGGER generate_reservation_number_trigger
 BEFORE INSERT ON reservations
 FOR EACH ROW
@@ -387,6 +388,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS generate_order_number_trigger ON restaurant_orders;
 CREATE TRIGGER generate_order_number_trigger
 BEFORE INSERT ON restaurant_orders
 FOR EACH ROW
@@ -407,6 +409,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS generate_delivery_number_trigger ON deliveries;
 CREATE TRIGGER generate_delivery_number_trigger
 BEFORE INSERT ON deliveries
 FOR EACH ROW
@@ -427,6 +430,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS generate_invoice_number_trigger ON invoices;
 CREATE TRIGGER generate_invoice_number_trigger
 BEFORE INSERT ON invoices
 FOR EACH ROW
@@ -436,7 +440,6 @@ EXECUTE FUNCTION generate_invoice_number();
 CREATE OR REPLACE FUNCTION update_client_total_spent()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Mise à jour après paiement d'une réservation
     IF TG_TABLE_NAME = 'reservations' THEN
         UPDATE clients SET total_spent = (
             SELECT COALESCE(SUM(paid_amount), 0) FROM reservations WHERE client_id = NEW.client_id
@@ -444,7 +447,6 @@ BEGIN
             SELECT COALESCE(SUM(paid_amount), 0) FROM restaurant_orders WHERE client_id = NEW.client_id
         )
         WHERE id = NEW.client_id;
-    -- Mise à jour après paiement d'une commande
     ELSIF TG_TABLE_NAME = 'restaurant_orders' THEN
         UPDATE clients SET total_spent = (
             SELECT COALESCE(SUM(paid_amount), 0) FROM reservations WHERE client_id = NEW.client_id
@@ -457,14 +459,47 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_client_spent_on_reservation ON reservations;
 CREATE TRIGGER update_client_spent_on_reservation
 AFTER INSERT OR UPDATE OF paid_amount ON reservations
 FOR EACH ROW
 WHEN (NEW.client_id IS NOT NULL)
 EXECUTE FUNCTION update_client_total_spent();
 
+DROP TRIGGER IF EXISTS update_client_spent_on_order ON restaurant_orders;
 CREATE TRIGGER update_client_spent_on_order
 AFTER INSERT OR UPDATE OF paid_amount ON restaurant_orders
 FOR EACH ROW
 WHEN (NEW.client_id IS NOT NULL)
 EXECUTE FUNCTION update_client_total_spent();
+
+-- ===========================================
+-- DONNÉES INITIALES
+-- ===========================================
+
+-- Utilisateur admin par défaut
+-- Mot de passe: Admin@123! (hashé avec bcrypt, 12 rounds)
+-- IMPORTANT: L'utilisateur DOIT changer ce mot de passe à la première connexion
+INSERT INTO users (email, password_hash, name, role, is_active, must_change_password)
+VALUES (
+    'admin@paradisier.mg',
+    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4q8VxV6qIJvvQYEK',
+    'Administrateur',
+    'admin',
+    true,
+    true
+) ON CONFLICT (email) DO UPDATE SET must_change_password = true;
+
+-- Paramètres par défaut
+INSERT INTO settings (key, value, description) VALUES
+    ('business_name', '"Le Paradisier Manager"', 'Nom de l''entreprise'),
+    ('currency', '"Ar"', 'Devise'),
+    ('phone', '"+261 34 00 000 00"', 'Téléphone'),
+    ('address', '"Toamasina, Madagascar"', 'Adresse')
+ON CONFLICT (key) DO NOTHING;
+
+-- ===========================================
+-- FIN DU SCRIPT
+-- ===========================================
+-- Vérification: Exécutez cette requête pour confirmer
+-- SELECT email, name, role, must_change_password FROM users WHERE email = 'admin@paradisier.mg';

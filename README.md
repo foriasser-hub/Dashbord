@@ -60,8 +60,9 @@ npx serve .
 
 ### 3. Connexion
 
-- **Email:** admin@paradisier.mg
-- **Mot de passe:** Admin@123!
+Utilisez les identifiants fournis lors de l'installation initiale.
+
+> **Note de sécurité:** L'utilisateur admin sera obligé de changer son mot de passe à la première connexion.
 
 ## 🔐 Sécurité
 

@@ -102,6 +102,16 @@ const AuthManager = {
       if (result.success) {
         this.currentUser = result.data.user;
         this.saveUserToSession(result.data.user);
+        
+        // Vérifier si l'utilisateur doit changer son mot de passe
+        if (result.data.user.mustChangePassword) {
+          return { 
+            success: true, 
+            user: result.data.user,
+            mustChangePassword: true
+          };
+        }
+        
         return { success: true, user: result.data.user };
       }
       

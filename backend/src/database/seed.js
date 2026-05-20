@@ -45,13 +45,13 @@ async function createDefaultAdmin() {
   // Hasher le mot de passe
   const passwordHash = await bcrypt.hash(password, 12);
   
-  // Créer l'admin
+  // Créer l'admin avec obligation de changer le mot de passe
   await query(`
-    INSERT INTO users (email, password_hash, name, role, is_active)
-    VALUES ($1, $2, $3, $4, $5)
-  `, [email, passwordHash, 'Administrateur', 'admin', true]);
+    INSERT INTO users (email, password_hash, name, role, is_active, must_change_password)
+    VALUES ($1, $2, $3, $4, $5, $6)
+  `, [email, passwordHash, 'Administrateur', 'admin', true, true]);
   
-  logger.info(`Admin créé: ${email}`);
+  logger.info(`Admin créé: ${email} (changement de mot de passe requis à la première connexion)`);
 }
 
 async function createDefaultSettings() {

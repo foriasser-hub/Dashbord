@@ -20,7 +20,7 @@ router.post('/login', validateLogin, async (req, res) => {
     
     // Rechercher l'utilisateur
     const result = await query(
-      'SELECT id, email, password_hash, name, role, is_active FROM users WHERE email = $1',
+      'SELECT id, email, password_hash, name, role, is_active, must_change_password, password_changed_at FROM users WHERE email = $1',
       [email]
     );
     
@@ -81,15 +81,19 @@ router.post('/login', validateLogin, async (req, res) => {
     
     auditLog('LOGIN_SUCCESS', user.id, { ip: req.ip });
     
+    // Vérifier si l'utilisateur doit changer son mot de passe
+    const mustChangePassword = user.must_change_password || !user.password_changed_at;
+    
     res.json({
       success: true,
-      message: 'Connexion réussie',
+      message: mustChangePassword ? 'Connexion réussie - Changement de mot de passe requis' : 'Connexion réussie',
       data: {
         user: {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role
+          role: user.role,
+          mustChangePassword: mustChangePassword
         },
         accessToken,
         refreshToken,
@@ -267,13 +271,22 @@ router.post('/change-password', authenticate, validateChangePassword, async (req
       });
     }
     
+    // Vérifier que le nouveau mot de passe est différent de l'ancien
+    const samePassword = await bcrypt.compare(newPassword, user.password_hash);
+    if (samePassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Le nouveau mot de passe doit être différent de l\'ancien'
+      });
+    }
+    
     // Hasher le nouveau mot de passe
     const newHash = await bcrypt.hash(newPassword, 12);
     
-    // Mettre à jour
+    // Mettre à jour et désactiver l'obligation de changement
     await query(`
       UPDATE users 
-      SET password_hash = $1, password_changed_at = NOW() 
+      SET password_hash = $1, password_changed_at = NOW(), must_change_password = false 
       WHERE id = $2
     `, [newHash, req.user.id]);
     
@@ -286,7 +299,7 @@ router.post('/change-password', authenticate, validateChangePassword, async (req
     
     res.json({
       success: true,
-      message: 'Mot de passe modifié avec succès'
+      message: 'Mot de passe modifié avec succès. Veuillez vous reconnecter.'
     });
     
   } catch (error) {

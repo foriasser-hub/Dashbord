@@ -51,11 +51,10 @@ npm start
 
 ## 🔐 Authentification
 
-### Compte administrateur par défaut:
-- **Email:** admin@paradisier.mg
-- **Mot de passe:** Admin@123!
+### Première connexion:
+Les identifiants admin par défaut sont définis dans le fichier `.env.example`.
 
-⚠️ **Changez ces identifiants en production!**
+> **Sécurité:** À la première connexion, l'admin sera **obligé de changer son mot de passe**.
 
 ### Rôles disponibles:
 | Rôle | Accès |

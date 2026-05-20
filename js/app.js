@@ -7,7 +7,19 @@
 const APP_CONFIG = {
   name: 'Le Paradisier Manager',
   currency: 'Ar',
-  apiURL: 'http://localhost:3000/api' // Modifier pour production
+  
+  // URLs de l'API selon l'environnement
+  // ⚠️ IMPORTANT: Remplacez l'URL production par votre URL Render
+  productionApiURL: 'https://paradisier-api.onrender.com/api',
+  developmentApiURL: 'http://localhost:3000/api',
+  
+  // Détection automatique de l'environnement
+  get apiURL() {
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1' ||
+                        window.location.hostname === '';
+    return isLocalhost ? this.developmentApiURL : this.productionApiURL;
+  }
 };
 
 // ===== ÉTAT DE L'APPLICATION =====
@@ -96,12 +108,114 @@ async function handleLogin(e) {
   const result = await AuthManager.login(email, password);
   
   if (result.success) {
-    window.location.reload();
+    // Vérifier si l'utilisateur doit changer son mot de passe
+    if (result.mustChangePassword) {
+      showForceChangePasswordScreen(password);
+    } else {
+      window.location.reload();
+    }
   } else {
     errorDiv.textContent = result.message;
     errorDiv.style.display = 'block';
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se connecter';
+  }
+}
+
+// ===== CHANGEMENT DE MOT DE PASSE OBLIGATOIRE =====
+function showForceChangePasswordScreen(currentPassword) {
+  document.body.innerHTML = `
+    <div class="login-container">
+      <div class="login-box">
+        <div class="login-header">
+          <span class="login-logo">🔐</span>
+          <h1>Changement requis</h1>
+          <p>Pour votre sécurité, vous devez changer votre mot de passe</p>
+        </div>
+        <form id="changePasswordForm">
+          <input type="hidden" id="currentPassword" value="${escapeHtml(currentPassword)}">
+          <div class="login-form-group">
+            <label for="newPassword"><i class="fas fa-key"></i> Nouveau mot de passe</label>
+            <input type="password" id="newPassword" name="newPassword" class="login-input" 
+                   required minlength="8" placeholder="Minimum 8 caractères">
+            <small class="form-hint">Majuscule, minuscule, chiffre et caractère spécial requis</small>
+          </div>
+          <div class="login-form-group">
+            <label for="confirmPassword"><i class="fas fa-check-double"></i> Confirmer le mot de passe</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" class="login-input" 
+                   required placeholder="Répétez le nouveau mot de passe">
+          </div>
+          <div id="changeError" class="login-error" style="display:none"></div>
+          <button type="submit" class="login-btn" id="changeBtn">
+            <i class="fas fa-save"></i> Enregistrer le nouveau mot de passe
+          </button>
+        </form>
+        <div class="login-footer">
+          <p><i class="fas fa-info-circle"></i> Cette action est obligatoire à la première connexion</p>
+        </div>
+      </div>
+    </div>`;
+  
+  document.getElementById('changePasswordForm').addEventListener('submit', handleForceChangePassword);
+}
+
+async function handleForceChangePassword(e) {
+  e.preventDefault();
+  
+  const btn = document.getElementById('changeBtn');
+  const errorDiv = document.getElementById('changeError');
+  
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  
+  // Validation
+  if (newPassword !== confirmPassword) {
+    errorDiv.textContent = 'Les mots de passe ne correspondent pas';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  
+  if (newPassword.length < 8) {
+    errorDiv.textContent = 'Le mot de passe doit contenir au moins 8 caractères';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  
+  // Validation du format (majuscule, minuscule, chiffre, spécial)
+  const hasUpper = /[A-Z]/.test(newPassword);
+  const hasLower = /[a-z]/.test(newPassword);
+  const hasNumber = /[0-9]/.test(newPassword);
+  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+  
+  if (!hasUpper || !hasLower || !hasNumber || !hasSpecial) {
+    errorDiv.textContent = 'Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et un caractère spécial';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  
+  if (newPassword === currentPassword) {
+    errorDiv.textContent = 'Le nouveau mot de passe doit être différent de l\'ancien';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+  errorDiv.style.display = 'none';
+  
+  const result = await AuthManager.changePassword(currentPassword, newPassword);
+  
+  if (result.success) {
+    // Déconnexion et reconnexion nécessaire
+    AuthManager.clearSession();
+    alert('Mot de passe modifié avec succès ! Veuillez vous reconnecter.');
+    window.location.reload();
+  } else {
+    errorDiv.textContent = result.message || 'Erreur lors du changement';
+    errorDiv.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Enregistrer le nouveau mot de passe';
   }
 }
 
