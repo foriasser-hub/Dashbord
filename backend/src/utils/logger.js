@@ -4,6 +4,8 @@
 
 import winston from 'winston';
 import { config } from '../config/index.js';
+import fs from 'fs';
+import path from 'path';
 
 const { combine, timestamp, printf, colorize, errors } = winston.format;
 
@@ -22,6 +24,53 @@ const logFormat = printf(({ level, message, timestamp, stack, ...meta }) => {
   return log;
 });
 
+// Configuration des transports
+const transports = [];
+
+// En production sur Render, utiliser uniquement la console
+// Les fichiers de logs ne sont pas persistants sur Render
+if (config.env === 'production') {
+  transports.push(new winston.transports.Console({
+    format: combine(
+      timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+      logFormat
+    )
+  }));
+} else {
+  // En développement, essayer de créer le dossier logs
+  try {
+    const logsDir = path.join(process.cwd(), 'logs');
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+    
+    transports.push(
+      new winston.transports.File({ 
+        filename: 'logs/error.log', 
+        level: 'error',
+        maxsize: 5242880, // 5MB
+        maxFiles: 5
+      }),
+      new winston.transports.File({ 
+        filename: 'logs/combined.log',
+        maxsize: 5242880,
+        maxFiles: 5
+      })
+    );
+  } catch (err) {
+    console.warn('Unable to create logs directory, using console only:', err.message);
+  }
+  
+  // Console colorée en dev
+  transports.push(new winston.transports.Console({
+    format: combine(
+      colorize(),
+      timestamp({ format: 'HH:mm:ss' }),
+      logFormat
+    )
+  }));
+}
+
 // Création du logger
 export const logger = winston.createLogger({
   level: config.logLevel,
@@ -31,33 +80,8 @@ export const logger = winston.createLogger({
     logFormat
   ),
   defaultMeta: { service: 'paradisier-api' },
-  transports: [
-    // Logs d'erreur dans un fichier séparé
-    new winston.transports.File({ 
-      filename: 'logs/error.log', 
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    }),
-    // Tous les logs
-    new winston.transports.File({ 
-      filename: 'logs/combined.log',
-      maxsize: 5242880,
-      maxFiles: 5
-    })
-  ]
+  transports
 });
-
-// En développement, ajouter les logs colorés dans la console
-if (config.env !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: combine(
-      colorize(),
-      timestamp({ format: 'HH:mm:ss' }),
-      logFormat
-    )
-  }));
-}
 
 // Logger pour les requêtes HTTP
 export const requestLogger = (req, res, next) => {
