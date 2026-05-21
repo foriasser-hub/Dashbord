@@ -30,7 +30,8 @@ const pool = new Pool(poolConfig);
 
 // Gestion des erreurs de connexion
 pool.on('error', (err) => {
-  logger.error('Erreur inattendue du pool PostgreSQL:', err);
+  console.error('[DB POOL ERROR]', { code: err.code, message: err.message });
+  logger.error('Erreur inattendue du pool PostgreSQL:', { code: err.code, message: err.message });
 });
 
 pool.on('connect', () => {
@@ -74,6 +75,12 @@ export const testConnection = async () => {
     logger.info(`Connexion DB réussie: ${result.rows[0].db} à ${result.rows[0].now}`);
     return true;
   } catch (error) {
+    console.error('[DB CONNECTION FAILED]', {
+      code: error.code,
+      message: error.message,
+      databaseUrl: process.env.DATABASE_URL ? 'present' : 'MISSING',
+      ssl: process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production'
+    });
     logger.error('Échec de connexion à la base de données:', error.message);
     return false;
   }
