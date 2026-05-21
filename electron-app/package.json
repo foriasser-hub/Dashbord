@@ -1,0 +1,69 @@
+{
+  "name": "le-paradisier-manager",
+  "productName": "Le Paradisier Manager",
+  "version": "2.0.0",
+  "description": "Application de gestion pour hôtel et restaurant - Fonctionne 100% hors-ligne",
+  "main": "main.js",
+  "author": {
+    "name": "Le Paradisier",
+    "email": "contact@paradisier.mg"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "mg.paradisier.manager",
+    "productName": "Le Paradisier Manager",
+    "copyright": "Copyright © 2024 Le Paradisier",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "Le-Paradisier-Manager-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Le Paradisier Manager",
+      "license": "LICENSE.txt"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns",
+      "category": "public.app-category.business"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icon.png",
+      "category": "Office"
+    }
+  }
+}
