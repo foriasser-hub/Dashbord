@@ -1,0 +1,66 @@
+LICENCE D'UTILISATION - LE PARADISIER MANAGER
+=============================================
+
+Version 2.0.0
+Copyright (c) 2024 Le Paradisier
+
+ACCORD DE LICENCE UTILISATEUR FINAL
+
+En installant ou en utilisant ce logiciel, vous acceptez les termes suivants :
+
+1. LICENCE D'UTILISATION
+------------------------
+Le Paradisier vous accorde une licence non exclusive et non transférable 
+pour utiliser ce logiciel sur un seul ordinateur à des fins professionnelles 
+ou personnelles.
+
+2. RESTRICTIONS
+---------------
+Vous ne pouvez pas :
+- Copier, modifier ou distribuer ce logiciel
+- Décompiler, désassembler ou faire de l'ingénierie inverse
+- Louer, prêter ou transférer ce logiciel à des tiers
+- Utiliser ce logiciel pour des activités illégales
+
+3. PROPRIÉTÉ INTELLECTUELLE
+---------------------------
+Ce logiciel et toute sa documentation restent la propriété exclusive 
+de Le Paradisier. Cette licence ne vous confère aucun droit de propriété 
+sur le logiciel.
+
+4. DONNÉES ET CONFIDENTIALITÉ
+-----------------------------
+Ce logiciel fonctionne entièrement hors-ligne. Vos données sont stockées 
+localement sur votre ordinateur. Le Paradisier n'a pas accès à vos données.
+
+Vous êtes responsable de :
+- La sauvegarde régulière de vos données
+- La sécurité de votre ordinateur
+- La confidentialité de votre mot de passe
+
+5. LIMITATION DE RESPONSABILITÉ
+-------------------------------
+Ce logiciel est fourni "tel quel", sans garantie d'aucune sorte.
+Le Paradisier ne sera pas responsable des dommages directs, indirects,
+accessoires ou consécutifs résultant de l'utilisation de ce logiciel.
+
+6. SUPPORT
+----------
+Pour toute assistance, contactez :
+Email : contact@paradisier.mg
+
+7. RÉSILIATION
+--------------
+Cette licence est effective jusqu'à sa résiliation. Elle sera résiliée 
+automatiquement si vous ne respectez pas ses termes.
+
+8. DROIT APPLICABLE
+-------------------
+Cette licence est régie par les lois de Madagascar.
+
+---
+
+En cliquant sur "J'accepte" ou en installant ce logiciel, vous confirmez 
+avoir lu et accepté les termes de cette licence.
+
+Le Paradisier - Tous droits réservés
